@@ -72,22 +72,19 @@ class social_shortcodes extends e_shortcode
 		//	return (ADMIN) ? "Unable to load social template [".$tmpl."]" : ''; // NO LAN
 		}
 
-		$social = array(
-			'rss'			=> array('href'=> (e107::isInstalled('rss_menu') ? e107::url('rss_menu', 'index', array('rss_url'=>'news')) : ''), 'title'=>'RSS/Atom Feed'),
-			'facebook'		=> array('href'=> deftrue('XURL_FACEBOOK'), 	'title'=>'Facebook'),
-			'twitter'		=> array('href'=> deftrue('XURL_TWITTER'),		'title'=>'Twitter'),
-		//	'google-plus'	=> array('href'=> deftrue('XURL_GOOGLE'),		'title'=>'Google Plus'),
-			'linkedin'		=> array('href'=> deftrue('XURL_LINKEDIN'),		'title'=>'LinkedIn'),
-			'github'		=> array('href'=> deftrue('XURL_GITHUB'),		'title'=>'Github'),
-			'pinterest'		=> array('href'=> deftrue('XURL_PINTEREST'),	'title'=>'Pinterest'),
-			'flickr'		=> array('href'=> deftrue('XURL_FLICKR'),		'title'=>'Flickr'),
-			'instagram'		=> array('href'=> deftrue('XURL_INSTAGRAM'),	'title'=>'Instagram'),
-			'youtube'		=> array('href'=> deftrue('XURL_YOUTUBE'),		'title'=>'YouTube'),
-			'steam'			=> array('href'=> deftrue('XURL_STEAM'),		'title'=>'Steam'),
-			'vimeo'			=> array('href'=> deftrue('XURL_VIMEO'),		'title'=>'Vimeo'),
-			'twitch'		=> array('href'=> deftrue('XURL_TWITCH'),		'title'=>'Twitch'),
-			'vk'			=> array('href'=> deftrue('XURL_VK'),			'title'=>'VK (Vkontakte)')
-		);
+		$social = empty(e107::pref('social','xurl_rss')) ? [] : array('rss'=> array('href'=> (e107::isInstalled('rss_menu') ? e107::url('rss_menu', 'index', array('rss_url'=>'news')) : ''), 'title'=>'RSS/Atom Feed')	);
+
+		$json = file_get_contents(__DIR__."/xurls.json");
+		$xurls = e107::unserialize($json);
+		foreach($xurls as $k=>$val)
+		{
+			if(!empty($this->xurl[$k]))
+			{
+				$social[$k] = ['href'=> $this->xurl[$k],   'title'=>$val['label'] ];
+			}
+		}
+
+
  			
 		// print_a($social);
 
