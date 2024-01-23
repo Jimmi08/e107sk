@@ -1,4 +1,4 @@
-<?php
+<?php 
 /*
 * e107 website system
 *
@@ -350,7 +350,7 @@ $sc->wrapper('fpw/form');
 $bcShortcodes 	= array('{FPW_TABLE_SECIMG_LAN}', '{FPW_TABLE_SECIMG_HIDDEN}', '{FPW_TABLE_SECIMG_SECIMG}', '{FPW_TABLE_SECIMG_TEXTBOC}');
 $nwShortcodes 	= array('{FPW_CAPTCHA_LAN}', '{FPW_CAPTCHA_HIDDEN}', '{FPW_CAPTCHA_IMG}', '{FPW_CAPTCHA_INPUT}');
 $FPW_TABLE 		= str_replace($bcShortcodes,$nwShortcodes,$FPW_TABLE);
-
+ 
 $text = $tp->parseTemplate($FPW_TABLE, true, $sc);
 
 $ns->tablerender($caption, $text, 'fpw');

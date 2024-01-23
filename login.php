@@ -30,6 +30,21 @@ if ((USER || e_LOGIN != e_SELF || (empty($pref['user_reg']) && !e107::getUserPro
 e107::coreLan('login');
 
 if(!defined('e_IFRAME')) define('e_IFRAME',true);
+
+$LOGIN_TEMPLATE = e107::getCoreTemplate('login');
+
+if (isset($LOGIN_TEMPLATE['page']['iframe']))
+{
+	if ($LOGIN_TEMPLATE['page']['iframe'])
+	{
+
+		if (!defined('e_IFRAME')) define('e_IFRAME', true);
+	}
+	else if (!defined('e_IFRAME')) define('e_IFRAME', false);
+}
+else if (!defined('e_IFRAME')) define('e_IFRAME', true);
+
+
 require_once(HEADERF);
 $use_imagecode = ($pref['logcode'] && extension_loaded("gd"));
 

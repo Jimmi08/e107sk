@@ -11,8 +11,8 @@
 */
 
 // minimal software version
-define('MIN_PHP_VERSION',   '5.6');
-define('MIN_MYSQL_VERSION', '4.1.2');
+define('MIN_PHP_VERSION',   '7.4');
+define('MIN_MYSQL_VERSION', '5.1.2');
 define('MAKE_INSTALL_LOG', true);
 
 // ensure CHARSET is UTF-8 if used
@@ -20,7 +20,7 @@ define('MAKE_INSTALL_LOG', true);
 
 /* Default Options and Paths for Installer */
 $MySQLprefix	     = 'e107_';
-$HANDLERS_DIRECTORY  = "e107_handlers/"; // needed for e107 class init
+$HANDLERS_DIRECTORY  = "ehandlers/"; // needed for e107 class init
 
 header('Content-type: text/html; charset=utf-8');
 
@@ -29,7 +29,7 @@ define("DEFAULT_INSTALL_THEME", 'bootstrap5');
 define('HELPICON', "<span class='e-tip glyphicon glyphicon-question-sign' style='float:right;padding-top:3px'></span>"); // <i class="glyphicon glyphicon-question-sign"></i>
 
 $e107info = array();
-require_once("e107_admin/ver.php");
+require_once("eadmin/ver.php");
 
 define("e_VERSION", $e107info['e107_version']);
 
@@ -41,18 +41,14 @@ if ((substr($e_ROOT,-1) !== '/') && (substr($e_ROOT,-1) !== '\\') )
 define('e_ROOT', $e_ROOT);
 unset($e_ROOT);
 
-
+ 
 class installLog
 {
 
 	const logFile = "e107Install.log";
 
 
-	/**
-	 * @param Throwable $exception
-	 * @return void
-	 */
-	static function exceptionHandler($exception)
+	static function exceptionHandler(Exception $exception)
 	{
 		$message = $exception->getMessage();
 		self::add($message, "error");
@@ -169,7 +165,7 @@ if($_SERVER['QUERY_STRING'] === 'clear')
 	unset($_SESSION);
 }
 
-//error_reporting(E_ALL);
+ error_reporting(E_ALL);
 
 /*function e107_ini_set($var, $value)
 {
@@ -189,7 +185,7 @@ if (function_exists('date_default_timezone_set'))
 {
 	date_default_timezone_set('UTC');
 }
-
+ 
 define('MAGIC_QUOTES_GPC', false); // (ini_get('magic_quotes_gpc') ? true : false));
 
 $php_version = PHP_VERSION;
@@ -246,7 +242,7 @@ if($functions_ok == false)
 }
 
 //obsolete $installer_folder_name = 'e107_install';
-include_once("./{$HANDLERS_DIRECTORY}core_functions.php");
+include_once("./{$HANDLERS_DIRECTORY}core_functions.php");  
 include_once("./{$HANDLERS_DIRECTORY}e107_class.php");
 
 function check_class($whatever='')
@@ -274,12 +270,30 @@ if(isset($_POST['previous_steps']))
 //$e107_paths = compact('ADMIN_DIRECTORY', 'FILES_DIRECTORY', 'IMAGES_DIRECTORY', 'THEMES_DIRECTORY', 'PLUGINS_DIRECTORY', 'HANDLERS_DIRECTORY', 'LANGUAGES_DIRECTORY', 'HELP_DIRECTORY', 'CACHE_DIRECTORY', 'DOWNLOADS_DIRECTORY', 'UPLOADS_DIRECTORY', 'MEDIA_DIRECTORY', 'LOGS_DIRECTORY', 'SYSTEM_DIRECTORY', 'CORE_DIRECTORY');
 $e107_paths = array();
 $e107 = e107::getInstance();
+$ret =  array(
+	'ADMIN_DIRECTORY' 		=> 'eadmin/',
+	'IMAGES_DIRECTORY' 		=> 'eimages/',
+	'THEMES_DIRECTORY' 		=> 'ethemes/',
+	'PLUGINS_DIRECTORY' 	=> 'eplugins/',
+	'FILES_DIRECTORY' 		=> 'efiles/', // DEPRECATED!!!
+	'HANDLERS_DIRECTORY' 	=> 'ehandlers/',
+	'LANGUAGES_DIRECTORY' 	=> 'elanguages/',
+	'DOCS_DIRECTORY' 		=> 'edocs/',
+	'MEDIA_DIRECTORY' 		=> 'emedia/',
+	'SYSTEM_DIRECTORY' 		=> 'esystem/',
+	'CORE_DIRECTORY' 		=> 'ecore/',
+	'WEB_DIRECTORY' 		=> 'eweb/',
+);
+
+$e107_paths = $e107->defaultDirs($ret);
+ 
 $ebase = realpath(__DIR__);
+
 if($e107->initInstall($e107_paths, $ebase, $override)===false)
 {
 	die_fatal_error("Error creating the following empty file: <b>".$ebase.DIRECTORY_SEPARATOR."e107_config.php</b><br />Please create it manually and then run the installation again.");
 }
-
+ 
 unset($e107_paths,$override,$ebase);
 
 // NEW - session handler
@@ -718,6 +732,10 @@ class e_install
 		
 		if(!$success || $this->previous_steps['mysql']['server'] == "" || $this->previous_steps['mysql']['user'] == "")
 		{
+			$head = LANINS_039 . "<br /><br />\n";
+			installLog::add('Stage 3 error');
+			$this->stage_2();
+			/*
 			$this->stage = 3;
 			$this->template->SetTag("stage_num", LANINS_021);
 			$e_forms->start_form("versions", $_SERVER['PHP_SELF'].($_SERVER['QUERY_STRING'] === "debug" ? "?debug" : ""));
@@ -769,6 +787,7 @@ class e_install
 			$e_forms->add_plain_html($output);
 			$this->add_button("submit", LAN_CONTINUE);
 			$this->template->SetTag("stage_title", LANINS_040);
+			*/
 		}
 		else
 		{
@@ -1508,12 +1527,14 @@ class e_install
 \$HELP_DIRECTORY      = '{$this->e107->e107_dirs['HELP_DIRECTORY']}';
 \$MEDIA_DIRECTORY	  = '{$this->e107->e107_dirs['MEDIA_DIRECTORY']}';
 \$SYSTEM_DIRECTORY    = '{$this->e107->e107_dirs['SYSTEM_DIRECTORY']}';
+\$CORE_DIRECTORY	  = '{$this->e107->e107_dirs['CORE_DIRECTORY']}';
+\$WEB_DIRECTORY		  = '{$this->e107->e107_dirs['WEB_DIRECTORY']}';
 
 \$E107_CONFIG = ['site_path' => '{$this->previous_steps['paths']['hash']}'];
 
 
 // -- Optional --
-// define('e_EMAIL_CRITICAL', '".$this->previous_steps['admin']['email']."');  // email the admin (and share no details with the user) if a critical error occurs. 
+// define('e_EMAIL_CRITICAL', '".$this->previous_steps['admin']['email']. "');  // email the admin (and share no details with the user) if a critical error occurs. 
 // define('e_LOG_CRITICAL', true); // log critical errors but do not display them to user. (similar to above, but no email is sent - instead error goes into a log file)   
 // define('e_DEBUG', true); // Enable debug mode to allow displaying of errors
 // define('e_HTTP_STATIC', 'https://static.mydomain.com/');  // Use a static subdomain for js/css/images etc. 
@@ -1521,7 +1542,9 @@ class e_install
 // define('e_GIT', 'path-to-git');  // Path to GIT for developers
 // define('X-FRAME-SAMEORIGIN', false); // Option to override X-Frame-Options 
 // define('e_PDO, true); // Enable PDO mode (used in PHP > 7 and when mysql_* methods are not available)
-
+// define('e_DEBUG_CANONICAL', true);  //display canonical urls on frontend
+// define('e_DEBUG_JQUERY', 2); //set jquery version without using library
+// define('e_DEBUG_JS_FOOTER', true); //render jquery in footer 
 ";
 /*
 if($this->pdo == true)
@@ -1631,10 +1654,9 @@ if($this->pdo == true)
 				}	
 				$this->add_button('submit', LAN_CONTINUE);
 			}
-
-		$this->stats();
+		 
 		$this->finish_form();
-
+		$this->stats();
 		$this->template->SetTag("stage_content", "<div class='alert alert-block alert-{$alertType}'>".$page."</div>".$e_forms->return_form());
 		installLog::add('Stage 8 completed');
 
@@ -1662,8 +1684,8 @@ if($this->pdo == true)
 	{
 		global $e_forms;
 
-		$data = array('name'=>$this->previous_steps['prefs']['sitename'], 'theme'=>$this->previous_steps['prefs']['sitetheme'], 'language'=>$this->previous_steps['language'], 'url'=>$_SERVER['SCRIPT_URI'],'version'=> defset('e_VERSION'), 'php'=>defset('PHP_VERSION'));
-		$base = base64_encode(http_build_query($data, '','&'));
+		$data = array('name'=>$this->previous_steps['prefs']['sitename'], 'theme'=>$this->previous_steps['prefs']['sitetheme'], 'language'=>$this->previous_steps['language'], 'url'=>$_SERVER['HTTP_REFERER'],'version'=> defset('e_VERSION'));
+		$base = base64_encode(http_build_query($data, ''));
 		$url = "https://e107.org/e-install/".$base;
 		$e_forms->add_plain_html("<img src='".$url."' style='width:1px; height:1px' />");
 
@@ -2444,7 +2466,7 @@ function template_data()
 		</style>
 		<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
 		<!--[if lt IE 9]>
-		  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+		  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
 	  </head>
 	  <body>
@@ -2534,10 +2556,10 @@ function template_data()
 function die_fatal_error($error)
 {
 
-	define("e_IMAGE","e107_images/");
-	define("e_JS","e107_web/js/");
-	define("e_THEME", "e107_themes/");
-	define("e_LANGUAGEDIR", "e107_languages/");
+	define("e_IMAGE","eimages/");
+	define("e_JS","eweb/js/");
+	define("e_THEME", "ethemes/");
+	define("e_LANGUAGEDIR", "elanguages/");
 	
 	include(e_LANGUAGEDIR."English/English.php");
 	include(e_LANGUAGEDIR."English/lan_installer.php");

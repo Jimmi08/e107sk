@@ -601,16 +601,6 @@ class pageClass
 		
 		if(!$sql->gen($query))
 		{
-			$r = eFront::instance()->getRouter();
-			if (e107::getPref('url_error_redirect', false) && $r->notFoundUrl)
-			{
-				$redirect = $r->assemble($r->notFoundUrl, '', 'encode=0&full=1');
-				//echo $redirect; exit;
-				e107::getRedirect()->redirect($redirect, true, 404);
-			}
-		  
-
-			
 		 	header("HTTP/1.0 404 Not Found");
 		 //	exit; 
 			/*
@@ -755,10 +745,8 @@ class pageClass
 		e107::title($metaTitle);
 		e107::meta('twitter:title', $metaTitle);
 
-		if(!empty($this->page['page_metatitle']))
-		{
-			e107::title(eHelper::formatMetaTitle($this->page['page_metatitle']),true);
-		}
+
+
 
 		if(!empty($this->page['page_metakeys']))
 		{
@@ -1076,7 +1064,7 @@ class pageClass
 	function pageRating($page_rating_flag)
 	{
 		
-		if($page_rating_flag)
+		if($page_rating_flag && e107::isInstalled("rater"))
 		{
 			return "<br /><div style='text-align:right'>".e107::getRate()->render("page", $this->pageID,array('label'=>LAN_PAGE_4))."</div>";
 			
@@ -1091,7 +1079,7 @@ class pageClass
 
 	function pageComment($page_comment_flag)
 	{
-		if($page_comment_flag)
+		if($page_comment_flag && e107::isInstalled("comment") )
 		{
 			$cobj = e107::getComment();
 

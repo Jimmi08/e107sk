@@ -40,9 +40,7 @@ $bcList = array(
 );
 
 e107::getLanguage()->bcDefs($bcList);
-
-
-
+ 
 if(e_AJAX_REQUEST)
 {
 	if(vartrue($_POST['q']))
@@ -129,7 +127,8 @@ $USER_FULL_TEMPLATE = str_replace('{USER_EMBED_USERPROFILE}','{USER_ADDONS}', $U
 $user_shortcodes = e107::getScBatch('user');
 $user_shortcodes->wrapper('user/view');
 
-
+e107::meta('robots', 'noindex');
+ 
 $user_frm = new form;
 require_once(HEADERF);
 
@@ -141,12 +140,13 @@ if (!$full_perms && !$self_page)
 	exit;
 }
 
-if (isset($_POST['records']))
+if (isset($_REQUEST['records']))
 {
-	$records = intval($_POST['records']);
-	$order = ($_POST['order'] == 'ASC' ? 'ASC' : 'DESC');
-	$from = 0;
+	$records = intval($_REQUEST['records']);
+	$order = ($_REQUEST['order'] == 'ASC' ? 'ASC' : 'DESC');
+	$from = intval($_REQUEST['from']);
 }
+ 
 else if(!e_QUERY)
 {
 	$records = 20;
@@ -174,9 +174,15 @@ else
 		}
 	}
 }
+ 
+
 if (vartrue($records) > 50)
 {
 	$records = 50;
+}
+if (vartrue($records) < 5)
+{
+	$records = 5;
 }
 
 if (isset($id))
@@ -202,18 +208,7 @@ if (isset($id))
 		require_once(FOOTERF);
 		exit;
 	}
-
-	if(vartrue($pref['profile_comments']))
-	{
-		require_once(e_HANDLER."comment_class.php");
-		$comment_edit_query = 'comment.user.'.$id;
-	}
-
-	if (isset($_POST['commentsubmit']) && $pref['profile_comments'])
-	{
-		$cobj = new comment;
-		$cobj->enter_comment($_POST['author_name'], $_POST['comment'], 'profile', $id, null, $_POST['subject']);
-	}
+ 
 
 	if($text = renderuser($id))
 	{
@@ -266,7 +261,9 @@ if (isset($id))
 
 	$ns->tablerender(LAN_USER_52, $text, 'user-list');
 
-	$parms = $users_total.",".$records.",".$from.",".e_SELF.'?[FROM].'.$records.".".$order;
+	$parms = $users_total.",".$records.",".$from.",".e_SELF.'?from=[FROM]&records='.$records."&order=".$order;
+   	//$parms = $users_total.",".$records.",".$from.",".e_SELF.'?[FROM].'.$records.".".$order;
+    
 	echo "<div class='nextprev form-inline'>&nbsp;".$tp->parseTemplate("{NEXTPREV={$parms}}")."</div>";
 
 
