@@ -270,16 +270,6 @@ class e107
 	);
 
 	/**
-	 * List of core classes using the 'e107' namespace.
-	 */
-	protected static $_named_handlers = [
-		'override' => true,
-
-	];
-
-
-
-	/**
 	 * Overload core handlers array
 	 * Format: 'core_class' => array('overload_class', 'overload_path');
 	 *
@@ -1000,9 +990,7 @@ class e107
 	 */
 	public static function getHandlerPath($class_name, $parse_path = true)
 	{
-
 		$ret = isset(self::$_known_handlers[$class_name]) ? self::$_known_handlers[$class_name] : null;
-
 		if($parse_path && $ret)
 		{
 			$ret = self::getParser()->replaceConstants($ret);
@@ -1044,11 +1032,6 @@ class e107
 	public static function isHandler($class_name)
 	{
 		return isset(self::$_known_handlers[$class_name]);
-	}
-
-	public static function isHandlerNamespaced($className)
-	{
-		return isset(self::$_named_handlers[$className]) ? '\\e107\\'.$className : false;
 	}
 
 	/**
@@ -1149,11 +1132,6 @@ class e107
 			}
 		}
 
-		if($named = self::isHandlerNamespaced($class_name))
-		{
-			$class_name = $named;
-		}
-
 		if($path && is_string($path) && !class_exists($class_name, false))
 		{
 			global $_E107;
@@ -1170,21 +1148,9 @@ class e107
 			// remove the need for external function.
 			//e107_require_once() is available without class2.php. - see core_functions.php
 		}
-
 		if(class_exists($class_name, false))
 		{
-
-			try
-			{
-				$cls = is_null($vars) ? new $class_name() : new $class_name($vars);
-			}
-			catch (Exception $e)
-			{
-			   trigger_error($e->getMessage());
-			   return false;
-			}
-
-			self::setRegistry($id, $cls);
+			self::setRegistry($id, new $class_name($vars));
 		}
 
 		return self::getRegistry($id);
@@ -1973,7 +1939,7 @@ class e107
 	/**
 	 * Retrieve override handler singleton object
 	 *
-	 * @return e107\override
+	 * @return override
 	 */
 	public static function getOverride()
 	{
