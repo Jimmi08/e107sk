@@ -601,7 +601,18 @@ class pageClass
 		
 		if(!$sql->gen($query))
 		{
-		 	header("HTTP/1.0 404 Not Found");
+
+			/* fix for 404 page */
+			$r = eFront::instance()->getRouter();
+
+			if (e107::getPref('url_error_redirect', false) && $r->notFoundUrl)
+			{
+				$redirect = $r->assemble($r->notFoundUrl, '', 'encode=0&full=1');
+				//echo $redirect; exit;
+				e107::getRedirect()->redirect($redirect, true, 404);
+			}
+
+			header("HTTP/1.0 404 Not Found");
 		 //	exit; 
 			/*
 			
