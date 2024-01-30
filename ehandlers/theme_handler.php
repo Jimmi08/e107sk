@@ -3180,7 +3180,7 @@ class themeHandler
 			
 			$med = e107::getMedia();
 			$med->import('_common_image', e_THEME.$name, "^.*?logo.*?(\.png|\.jpeg|\.jpg|\.JPG|\.GIF|\.PNG)$");	
-			$med->import('_common_image', e_THEME.$name, '', 'min-size=20000');
+			$med->import('_common_image', e_THEME.$name."/install/", '', 'min-size=20000');
 			
 
 
