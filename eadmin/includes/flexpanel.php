@@ -26,21 +26,25 @@ define('FLEXPANEL_ENABLED', $flepanelEnabled);
 // Save rearranged menus to user.
 if(e_AJAX_REQUEST)
 {
+
 	if(FLEXPANEL_ENABLED && varset($_POST['core-flexpanel-order'], false))
 	{
 		// If "Apply dashboard preferences to all administrators" is checked.
+//print_r($_POST);
 		if($adminPref == 1)
 		{
+
 			e107::getConfig()
 				->setPosted('core-flexpanel-order', $_POST['core-flexpanel-order'])
-				->save();
+				->save(true,true);
+
 		}
 		else
 		{
-			e107::getUser()
+			$result = e107::getUser()
 				->getConfig()
 				->set('core-flexpanel-order', $_POST['core-flexpanel-order'])
-				->save();
+				->save(true,true);
 		}
 		exit;
 	}
@@ -56,7 +60,7 @@ e107_require_once(e_ADMIN . 'includes/infopanel.php');
 class adminstyle_flexpanel extends adminstyle_infopanel
 {
 
-	private $iconlist = array();
+	private $iconlist;
 
 	/**
 	 * Constructor.
@@ -338,11 +342,15 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 	 */
 	function getMenuPosition($id)
 	{
+		$id = str_replace('_', '-', $id); // fix for core news etc.
+
 		$user_pref = $this->getUserPref();
 
 		if(!empty($user_pref['core-flexpanel-order'][$id]))
 		{
-			return $user_pref['core-flexpanel-order'][$id];
+			$arr = $user_pref['core-flexpanel-order'][$id];
+
+			return ['area' => $arr['area'], 'weight' => (int) $arr['weight']];
 		}
 
 		$default = array(
@@ -383,7 +391,7 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-01',
 					'weight' => -1,
 				),
-				'core-infopanel_help'           => array(
+				'core-infopanel-help'           => array(
 					'area'   => 'menu-area-01',
 					'weight' => 0,
 				),
@@ -395,15 +403,15 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-04',
 					'weight' => 2,
 				),
-				'core-infopanel_mye107'         => array(
+				'core-infopanel-mye107'         => array(
 					'area'   => 'menu-area-02',
 					'weight' => 0,
 				),
-				'core-infopanel_news'           => array(
+				'core-infopanel-news'           => array(
 					'area'   => 'menu-area-03',
 					'weight' => 0,
 				),
-				'core-infopanel_website_status' => array(
+				'core-infopanel-website-status' => array(
 					'area'   => 'menu-area-03',
 					'weight' => 1,
 				),
@@ -413,7 +421,7 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-01',
 					'weight' => -1,
 				),
-				'core-infopanel_help'           => array(
+				'core-infopanel-help'           => array(
 					'area'   => 'menu-area-01',
 					'weight' => 0,
 				),
@@ -425,15 +433,15 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-05',
 					'weight' => 0,
 				),
-				'core-infopanel_mye107'         => array(
+				'core-infopanel-mye107'         => array(
 					'area'   => 'menu-area-02',
 					'weight' => 0,
 				),
-				'core-infopanel_news'           => array(
+				'core-infopanel-news'           => array(
 					'area'   => 'menu-area-03',
 					'weight' => 0,
 				),
-				'core-infopanel_website_status' => array(
+				'core-infopanel-website-status' => array(
 					'area'   => 'menu-area-12',
 					'weight' => 1,
 				),
@@ -443,7 +451,7 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-02',
 					'weight' => -1,
 				),
-				'core-infopanel_help'           => array(
+				'core-infopanel-help'           => array(
 					'area'   => 'menu-area-02',
 					'weight' => 0,
 				),
@@ -455,15 +463,15 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-04',
 					'weight' => 0,
 				),
-				'core-infopanel_mye107'         => array(
+				'core-infopanel-mye107'         => array(
 					'area'   => 'menu-area-01',
 					'weight' => 0,
 				),
-				'core-infopanel_news'           => array(
+				'core-infopanel-news'           => array(
 					'area'   => 'menu-area-09',
 					'weight' => 0,
 				),
-				'core-infopanel_website_status' => array(
+				'core-infopanel-website-status' => array(
 					'area'   => 'menu-area-13',
 					'weight' => 0,
 				),
@@ -473,7 +481,7 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-03',
 					'weight' => -1,
 				),
-				'core-infopanel_help'           => array(
+				'core-infopanel-help'           => array(
 					'area'   => 'menu-area-03',
 					'weight' => 0,
 				),
@@ -485,15 +493,15 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-05',
 					'weight' => 0,
 				),
-				'core-infopanel_mye107'         => array(
+				'core-infopanel-mye107'         => array(
 					'area'   => 'menu-area-02',
 					'weight' => 0,
 				),
-				'core-infopanel_news'           => array(
+				'core-infopanel-news'           => array(
 					'area'   => 'menu-area-12',
 					'weight' => 0,
 				),
-				'core-infopanel_website_status' => array(
+				'core-infopanel-website-status' => array(
 					'area'   => 'menu-area-13',
 					'weight' => 0,
 				),
@@ -503,7 +511,7 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-01',
 					'weight' => -1,
 				),
-				'core-infopanel_help'           => array(
+				'core-infopanel-help'           => array(
 					'area'   => 'menu-area-01',
 					'weight' => 0,
 				),
@@ -515,15 +523,15 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-03',
 					'weight' => 0,
 				),
-				'core-infopanel_mye107'         => array(
+				'core-infopanel-mye107'         => array(
 					'area'   => 'menu-area-04',
 					'weight' => 0,
 				),
-				'core-infopanel_news'           => array(
+				'core-infopanel-news'           => array(
 					'area'   => 'menu-area-05',
 					'weight' => 0,
 				),
-				'core-infopanel_website_status' => array(
+				'core-infopanel-website-status' => array(
 					'area'   => 'menu-area-06',
 					'weight' => 0,
 				),
@@ -533,7 +541,7 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-01',
 					'weight' => -1,
 				),
-				'core-infopanel_help'           => array(
+				'core-infopanel-help'           => array(
 					'area'   => 'menu-area-01',
 					'weight' => 0,
 				),
@@ -545,15 +553,15 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-01',
 					'weight' => 2,
 				),
-				'core-infopanel_mye107'         => array(
+				'core-infopanel-mye107'         => array(
 					'area'   => 'menu-area-07',
 					'weight' => 0,
 				),
-				'core-infopanel_news'           => array(
+				'core-infopanel-news'           => array(
 					'area'   => 'menu-area-08',
 					'weight' => 0,
 				),
-				'core-infopanel_website_status' => array(
+				'core-infopanel-website-status' => array(
 					'area'   => 'menu-area-08',
 					'weight' => 1,
 				),
@@ -563,7 +571,7 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-01',
 					'weight' => -1,
 				),
-				'core-infopanel_help'           => array(
+				'core-infopanel-help'           => array(
 					'area'   => 'menu-area-01',
 					'weight' => 0,
 				),
@@ -575,15 +583,15 @@ class adminstyle_flexpanel extends adminstyle_infopanel
 					'area'   => 'menu-area-01',
 					'weight' => 2,
 				),
-				'core-infopanel_mye107'         => array(
+				'core-infopanel-mye107'         => array(
 					'area'   => 'menu-area-07',
 					'weight' => 0,
 				),
-				'core-infopanel_news'           => array(
+				'core-infopanel-news'           => array(
 					'area'   => 'menu-area-08',
 					'weight' => 0,
 				),
-				'core-infopanel_website_status' => array(
+				'core-infopanel-website-status' => array(
 					'area'   => 'menu-area-08',
 					'weight' => 1,
 				),
