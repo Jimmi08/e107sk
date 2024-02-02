@@ -612,7 +612,7 @@ class users_admin_ui extends e_admin_ui
 
 		$row = e107::user($userid);
 		
-		$sql->update("user", "user_ban='0' WHERE user_id='".$userid."' ");
+		$sql->update("user", "user_ban='2' WHERE user_id='".$userid."' ");
 		$sql->delete("banlist"," banlist_ip='{$row['user_ip']}' ");
 
 		$vars = array('x'=>$sysuser->getId(), 'y'=> $sysuser->getName(), 'z'=> $sysuser->getValue('email'));
