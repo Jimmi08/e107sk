@@ -4176,9 +4176,9 @@ class e107
 	 */
 	public static function url($plugin = '', $key = null, $row = array(), $options = array())
 	{
-
+ 
 		/* backward compat - core keys. ie. news/xxx/xxx user/xxx/xxx etc, */
-		$legacy = array('news', 'page', 'search', 'user', 'download', 'gallery');
+		$legacy = array('page', 'search', 'user', 'download', 'gallery');
 
 		if($plugin === 'search')
 		{

@@ -346,6 +346,7 @@
 )]]></core>
 		<core name="url_config"><![CDATA[array (
   'index' => 'core',
+  'news' => 'core',
   'page' => 'core',
   'search' => 'core',
   'system' => 'core',
@@ -359,7 +360,14 @@
   'index' => 
   array (
     0 => 'core',
-  ), 
+  ),
+  'news' => 
+  array (
+    0 => 'core',
+    1 => 'core/sef_full',
+    2 => 'core/sef_noid',
+    3 => 'core/sef',
+  ),
   'page' => 
   array (
     0 => 'core',

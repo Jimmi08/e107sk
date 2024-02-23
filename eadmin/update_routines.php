@@ -636,7 +636,7 @@ function update_core_database($type = '')
 		$just_check = !($type == 'do');
 		$pref = e107::getPref();
 
-
+/*
 		if(!isset($pref['lan_global_list']['news']))
 		{
 			if($just_check)
@@ -648,7 +648,7 @@ function update_core_database($type = '')
 			$plgClass->plugFolder = 'news';
 			$plgClass->XmlLanguageFiles('refresh');
 		}
-
+*/
 
 		if(!$sql->select('core_media_cat', 'media_cat_id', "media_cat_category = '_icon_svg' LIMIT 1"))
 		{

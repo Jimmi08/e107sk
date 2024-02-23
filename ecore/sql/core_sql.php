@@ -1,14 +1,13 @@
 <?php
-/*
+/**
  * e107 website system
  *
- * Copyright (C) e107 Inc (e107.org)
+ * Copyright (C) 2008-2021 e107 Inc (e107.org)
  * Released under the terms and conditions of the
  * GNU General Public License (http://www.gnu.org/licenses/gpl.txt)
  *
  * Core SQL
- *
-*/
+ */
 
 header("location:../index.php");
 exit;
@@ -17,7 +16,7 @@ exit;
 # +---------------------------------------------------------------+
 # |        e107 website system
 # |
-# |        Copyright (C) 2008-2015 e107 Inc (e107.org)
+# |        Copyright (C) 2008-2021 e107 Inc (e107.org)
 # |        http://e107.org
 # |
 # |        Released under the terms and conditions of the
@@ -41,7 +40,7 @@ CREATE TABLE admin_log (
   dblog_remarks text NOT NULL,
   PRIMARY KEY  (dblog_id),
   KEY dblog_datestamp (dblog_datestamp)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 #
@@ -59,7 +58,7 @@ CREATE TABLE audit_log (
   dblog_remarks text NOT NULL,
   PRIMARY KEY  (dblog_id),
   KEY dblog_datestamp (dblog_datestamp)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 
@@ -80,10 +79,33 @@ CREATE TABLE banlist (
   KEY banlist_ip (banlist_ip),
   KEY banlist_datestamp (banlist_datestamp),
   KEY banlist_banexpires (banlist_banexpires)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
- 
+#
+# Table structure for table `comments`
+#
+
+CREATE TABLE comments (
+  comment_id int(10) unsigned NOT NULL auto_increment,
+  comment_pid int(10) unsigned NOT NULL default '0',
+  comment_item_id int(10) unsigned NOT NULL default '0',
+  comment_subject varchar(100) NOT NULL default '',
+  comment_author_id int(10) unsigned NOT NULL default '0',
+  comment_author_name varchar(100) NOT NULL default '',
+  comment_author_email varchar(200) NOT NULL default '',
+  comment_datestamp int(10) unsigned NOT NULL default '0',
+  comment_comment text NOT NULL,
+  comment_blocked tinyint(3) unsigned NOT NULL default '0',
+  comment_ip varchar(45) NOT NULL default '',
+  comment_type varchar(20) NOT NULL default '0',
+  comment_lock tinyint(1) unsigned NOT NULL default '0',
+  comment_share tinyint(1) unsigned NOT NULL default '0',
+  PRIMARY KEY  (comment_id),
+  KEY comment_blocked (comment_blocked),
+  KEY comment_author_id (comment_author_id) 
+) ENGINE=InnoDB;
+# --------------------------------------------------------
 
 #
 # Table structure for table `core`
@@ -92,7 +114,7 @@ CREATE TABLE core (
   e107_name varchar(100) NOT NULL default '',
   e107_value text NOT NULL,
   PRIMARY KEY  (e107_name)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 #
@@ -116,7 +138,7 @@ CREATE TABLE core_media (
   media_tags text NOT NULL,
   PRIMARY KEY (media_id),
   UNIQUE KEY media_url (media_url)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 CREATE TABLE core_media_cat (
   media_cat_id int(10) unsigned NOT NULL auto_increment,
@@ -130,7 +152,7 @@ CREATE TABLE core_media_cat (
   media_cat_order int(3) unsigned NOT NULL default '0',
   PRIMARY KEY  (media_cat_id),
   UNIQUE KEY media_cat_category (media_cat_category)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 
 CREATE TABLE cron (
@@ -144,7 +166,7 @@ CREATE TABLE cron (
  cron_active INT(1) UNSIGNED NOT NULL,
  PRIMARY KEY (cron_id),
  UNIQUE KEY cron_function (cron_function)
-) ENGINE = MYISAM;
+) ENGINE=InnoDB;
 
 
 # Table structure for table `dblog` - db/debug/rolling
@@ -164,7 +186,7 @@ CREATE TABLE dblog (
   dblog_remarks text NOT NULL,
   PRIMARY KEY  (dblog_id),
   KEY dblog_datestamp (dblog_datestamp)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 # --------------------------------------------------------
 
@@ -181,7 +203,7 @@ CREATE TABLE generic (
   gen_chardata text NOT NULL,
   PRIMARY KEY  (gen_id),
   KEY gen_type (gen_type)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 #
@@ -204,7 +226,7 @@ CREATE TABLE links (
   link_sefurl varchar(255) NOT NULL,
   link_owner varchar(50) NOT NULL default '',
   PRIMARY KEY  (link_id)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 # --------------------------------------------------------
 
@@ -225,7 +247,7 @@ CREATE TABLE mail_recipients (
 	PRIMARY KEY (mail_target_id),
 	KEY mail_status (mail_status),
 	KEY mail_detail_id (mail_detail_id)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 CREATE TABLE mail_content (
 	mail_source_id int(10) unsigned NOT NULL auto_increment,
@@ -251,7 +273,7 @@ CREATE TABLE mail_content (
 	mail_media text,
 	PRIMARY KEY (mail_source_id),
 	KEY mail_content_status (mail_content_status)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 
 #
@@ -269,9 +291,87 @@ CREATE TABLE menus (
   menu_layout varchar(100) NOT NULL default '',
   menu_parms text NOT NULL,
   PRIMARY KEY  (menu_id)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
- 
+
+#
+# Table structure for table `news`
+#
+
+CREATE TABLE news (
+  news_id int(10) unsigned NOT NULL auto_increment,
+  news_title varchar(255) NOT NULL default '',
+  news_sef varchar(255) NOT NULL default '',
+  news_body longtext NOT NULL,
+  news_extended longtext NOT NULL,
+  news_meta_title varchar(255) NOT NULL default '',
+  news_meta_keywords  varchar(255) NOT NULL default '',
+  news_meta_description text NOT NULL,
+  news_meta_robots  varchar(255) default '',
+  news_datestamp int(10) unsigned NOT NULL default '0',
+  news_modified int(10) unsigned NOT NULL default '0',
+  news_author int(10) unsigned NOT NULL default '0',
+  news_category tinyint(3) unsigned NOT NULL default '0',
+  news_allow_comments tinyint(3) unsigned NOT NULL default '0',
+  news_start int(10) unsigned NOT NULL default '0',
+  news_end int(10) unsigned NOT NULL default '0',
+  news_class varchar(255) NOT NULL default '0',
+  news_render_type varchar(20) NOT NULL default '0',
+  news_comment_total int(10) unsigned NOT NULL default '0',
+  news_summary text NOT NULL,
+  news_thumbnail text NOT NULL,
+  news_sticky tinyint(3) unsigned NOT NULL default '0',
+  news_template varchar(50) default NULL,
+  PRIMARY KEY  (news_id),
+  KEY news_category  (news_category),
+  KEY news_start_end (news_start,news_end),
+  KEY news_datestamp (news_datestamp),
+  KEY news_sticky  (news_sticky),
+  KEY news_render_type  (news_render_type),
+  KEY news_class (news_class)
+) ENGINE=InnoDB;
+
+
+# --------------------------------------------------------
+
+#
+# Table structure for table `news_category`
+#
+
+CREATE TABLE news_category (
+  category_id tinyint(3) unsigned NOT NULL auto_increment,
+  category_name varchar(200) NOT NULL default '',
+  category_sef varchar(200) NOT NULL default '',
+  category_meta_description text NOT NULL,
+  category_meta_keywords  varchar(255) NOT NULL default '',
+  category_manager tinyint(3) unsigned NOT NULL default '254',
+  category_icon varchar(250) NOT NULL default '',
+  category_order tinyint(3) unsigned NOT NULL default '0',
+  category_template varchar(50) default NULL,
+  PRIMARY KEY  (category_id),
+  KEY category_order (category_order)
+) ENGINE=InnoDB;
+# --------------------------------------------------------
+
+#
+# Table structure for table `online`
+#
+
+CREATE TABLE online (
+  online_timestamp int(10) unsigned NOT NULL default '0',
+  online_flag tinyint(3) unsigned NOT NULL default '0',
+  online_user_id varchar(100) NOT NULL default '',
+  online_ip varchar(45) NOT NULL default '',
+  online_location text NOT NULL,        
+  online_pagecount tinyint(3) unsigned NOT NULL default '0',
+  online_active int(10) unsigned NOT NULL default '0',
+  online_agent varchar(255) NOT NULL default '',
+  online_language varchar(2) NOT NULL default '',
+  KEY online_ip (online_ip),
+  KEY online_ip_user_id (online_ip, online_user_id),
+  KEY online_timestamp (online_timestamp)
+) ENGINE=InnoDB;
+# --------------------------------------------------------
 
 #
 # Table structure for table `page`
@@ -310,7 +410,7 @@ CREATE TABLE page (
   menu_button_text varchar(250) NOT NULL default '',   
   
   PRIMARY KEY  (page_id)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 
@@ -334,7 +434,7 @@ CREATE TABLE page_chapters (
   chapter_fields mediumtext,
   PRIMARY KEY  (chapter_id),
   KEY chapter_order (chapter_order)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 
@@ -353,10 +453,25 @@ CREATE TABLE plugin (
   plugin_category varchar(100) NOT NULL default '',
   PRIMARY KEY  (plugin_id),
   UNIQUE KEY plugin_path (plugin_path)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 # --------------------------------------------------------
- 
+#
+# Table structure for table `rate`
+#
+
+CREATE TABLE rate (
+  rate_id int(10) unsigned NOT NULL auto_increment,
+  rate_table varchar(100) NOT NULL default '',
+  rate_itemid int(10) unsigned NOT NULL default '0',
+  rate_rating int(10) unsigned NOT NULL default '0',
+  rate_votes int(10) unsigned NOT NULL default '0',
+  rate_voters text NOT NULL,
+  rate_up int(10) unsigned NOT NULL default '0',
+  rate_down int(10) unsigned NOT NULL default '0',
+  PRIMARY KEY  (rate_id)
+) ENGINE=InnoDB;
+# --------------------------------------------------------
 
 #
 # Table structure for table `session`
@@ -369,11 +484,33 @@ CREATE TABLE session (
   session_data longtext NOT NULL,
   PRIMARY KEY  (session_id),
   INDEX (session_expires)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 
- 
+#
+# Table structure for table `submitnews`
+#
+
+CREATE TABLE submitnews (
+  submitnews_id int(10) unsigned NOT NULL auto_increment,
+  submitnews_name varchar(100) NOT NULL default '',
+  submitnews_email varchar(100) NOT NULL default '',
+  submitnews_user int(10) unsigned NOT NULL default '0',
+  submitnews_title varchar(200) NOT NULL default '',
+  submitnews_category tinyint(3) unsigned NOT NULL default '0',
+  submitnews_item text NOT NULL,
+  submitnews_datestamp int(10) unsigned NOT NULL default '0',
+  submitnews_ip varchar(45) NOT NULL default '',
+  submitnews_auth tinyint(3) unsigned NOT NULL default '0',
+  submitnews_file text NOT NULL,
+  submitnews_keywords  varchar(255) NOT NULL default '',
+  submitnews_description text,
+  submitnews_summary text,
+  submitnews_media text,
+  PRIMARY KEY  (submitnews_id)
+) ENGINE=InnoDB;
+# --------------------------------------------------------
 
 #
 # Table structure for table `tmp`
@@ -385,7 +522,7 @@ CREATE TABLE tmp (
   tmp_info text NOT NULL,
   KEY tmp_ip (tmp_ip),
   KEY tmp_time (tmp_time)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 #
@@ -410,7 +547,7 @@ CREATE TABLE upload (
   upload_owner varchar(50) NOT NULL default '',
   PRIMARY KEY  (upload_id),
   KEY upload_active (upload_active)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 # --------------------------------------------------------
 
@@ -450,7 +587,7 @@ CREATE TABLE user (
   UNIQUE KEY user_name (user_name),
   UNIQUE KEY user_loginname (user_loginname),
   KEY join_ban_index (user_join,user_ban)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 #
@@ -468,7 +605,7 @@ CREATE TABLE userclass_classes (
   userclass_icon varchar(250) NOT NULL default '',
   userclass_perms text NOT NULL,
   PRIMARY KEY  (userclass_id)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 #
@@ -479,7 +616,7 @@ CREATE TABLE user_extended (
   user_extended_id int(10) unsigned NOT NULL default '0',
   user_hidden_fields text,
   PRIMARY KEY  (user_extended_id)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 
 
@@ -503,6 +640,6 @@ CREATE TABLE user_extended_struct (
   user_extended_struct_order int(10) unsigned NOT NULL default '0',
   user_extended_struct_parent int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (user_extended_struct_id)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 # --------------------------------------------------------
 

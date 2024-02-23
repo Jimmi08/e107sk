@@ -5158,13 +5158,14 @@ var_dump($select_options);*/
 
 			if ($parms['link'] === 'sef')
 			{
+				
 				if (!$model->getUrl())
 				{
 					/** @var e_admin_controller_ui $controller */
 					$controller = $this->getController();
 					$model->setUrl($controller->getUrl());
 				}
-
+				 
 				// assemble the url
 				$link = $model->url(null);
 			}
