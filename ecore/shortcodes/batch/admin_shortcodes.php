@@ -2328,7 +2328,7 @@ Inverse 	10 	<span class="badge badge-inverse">10</span>
 			
 			$tmp[1]['text']            = LAN_SETTINGS;
 			$tmp[1]['description']     = ADLAN_151;
-			$tmp[1]['link']            = e107::getUrl()->create('user/myprofile/edit',array('id'=>USERID)); //e_BASE.'usersettings.php';
+			$tmp[1]['link']            = e_BASE.'usersettings.php';
 			$tmp[1]['image']           = "<i class='S16 e-settings-16'></i>"; // "<img src='".E_16_CAT_SETT."' alt='".ADLAN_151."' class='icon S16' />";
 			$tmp[1]['image_large']     = '';
 			$tmp[1]['image_src']       = '';
@@ -2337,18 +2337,18 @@ Inverse 	10 	<span class="badge badge-inverse">10</span>
 
 			// If not Main Admin and "Apply dashboard preferences to all administrators"
 			// is checked in admin theme settings.
-			$adminPref = e107::getConfig()->get('adminpref', 0);
-			if($adminPref == 0 || getperms('1'))
-			{
-				$tmp[2]['text'] = LAN_PERSONALIZE;
-				$tmp[2]['description'] = 'Customize administration panels';
-				$tmp[2]['link'] = e_ADMIN . 'admin.php?mode=customize';
-				$tmp[2]['image'] = "<i class='S16 e-admins-16'></i>"; //E_16_ADMIN; // "<img src='".E_16_NAV_ADMIN."' alt='".ADLAN_151."' class='icon S16' />";
-				$tmp[2]['image_large'] = '';
-				$tmp[2]['image_src'] = '';
-				$tmp[2]['image_large_src'] = '';
-				//	$tmp[2]['perm'] = '';
-			}
+			// $adminPref = e107::getConfig()->get('adminpref', 0);
+			// if($adminPref == 0 || getperms('1'))
+			// {
+			// 	$tmp[2]['text'] = LAN_PERSONALIZE;
+			// 	$tmp[2]['description'] = 'Customize administration panels';
+			// 	$tmp[2]['link'] = e_ADMIN . 'admin.php?mode=customize';
+			// 	$tmp[2]['image'] = "<i class='S16 e-admins-16'></i>"; //E_16_ADMIN; // "<img src='".E_16_NAV_ADMIN."' alt='".ADLAN_151."' class='icon S16' />";
+			// 	$tmp[2]['image_large'] = '';
+			// 	$tmp[2]['image_src'] = '';
+			// 	$tmp[2]['image_large_src'] = '';
+			// 	//	$tmp[2]['perm'] = '';
+			// }
 			
 			
 			$tmp[3]['text']            = LAN_LOGOUT;
@@ -2371,44 +2371,44 @@ Inverse 	10 	<span class="badge badge-inverse">10</span>
 
 			
 							
-			$tmp[5]['text'] 			= 'e107 Website';
-			$tmp[5]['description'] 		= '';
-			$tmp[5]['link'] 			= 'https://e107.org';
-			$tmp[5]['image'] 			= defset('E_16_E107');
-			$tmp[5]['image_large'] 		= '';
-			$tmp[5]['image_src'] 		= '';
-			$tmp[5]['image_large_src'] 	= '';
-			$tmp[5]['link_class']		= '';
+			// $tmp[5]['text'] 			= 'e107 Website';
+			// $tmp[5]['description'] 		= '';
+			// $tmp[5]['link'] 			= 'https://e107.org';
+			// $tmp[5]['image'] 			= defset('E_16_E107');
+			// $tmp[5]['image_large'] 		= '';
+			// $tmp[5]['image_src'] 		= '';
+			// $tmp[5]['image_large_src'] 	= '';
+			// $tmp[5]['link_class']		= '';
 
 										
-			$tmp[6]['text'] 			= 'e107 on Twitter';
-			$tmp[6]['description'] 		= '';
-			$tmp[6]['link'] 			= 'https://twitter.com/e107';
-			$tmp[6]['image'] 			= defset('E_16_TWITTER'); // "<img src='".E_16_NAV_LGOT."' alt='".ADLAN_151."' class='icon S16' />";
-			$tmp[6]['image_large'] 		= '';
-			$tmp[6]['image_src'] 		= '';
-			$tmp[6]['image_large_src'] 	= '';
-			$tmp[6]['link_class']		= '';
+			// $tmp[6]['text'] 			= 'e107 on Twitter';
+			// $tmp[6]['description'] 		= '';
+			// $tmp[6]['link'] 			= 'https://twitter.com/e107';
+			// $tmp[6]['image'] 			= defset('E_16_TWITTER'); // "<img src='".E_16_NAV_LGOT."' alt='".ADLAN_151."' class='icon S16' />";
+			// $tmp[6]['image_large'] 		= '';
+			// $tmp[6]['image_src'] 		= '';
+			// $tmp[6]['image_large_src'] 	= '';
+			// $tmp[6]['link_class']		= '';
 								
 							
-			$tmp[7]['text'] 			= 'e107 on Facebook';
-			$tmp[7]['description'] 		= '';
-			$tmp[7]['link'] 			= 'https://www.facebook.com/e107CMS';
-			$tmp[7]['image'] 			= defset('E_16_FACEBOOK'); // "<img src='".E_16_NAV_LGOT."' alt='".ADLAN_151."' class='icon S16' />";
-			$tmp[7]['image_large'] 		= '';
-			$tmp[7]['image_src'] 		= '';
-			$tmp[7]['image_large_src'] 	= '';
-			$tmp[7]['link_class']		= '';	
+			// $tmp[7]['text'] 			= 'e107 on Facebook';
+			// $tmp[7]['description'] 		= '';
+			// $tmp[7]['link'] 			= 'https://www.facebook.com/e107CMS';
+			// $tmp[7]['image'] 			= defset('E_16_FACEBOOK'); // "<img src='".E_16_NAV_LGOT."' alt='".ADLAN_151."' class='icon S16' />";
+			// $tmp[7]['image_large'] 		= '';
+			// $tmp[7]['image_src'] 		= '';
+			// $tmp[7]['image_large_src'] 	= '';
+			// $tmp[7]['link_class']		= '';	
 	
 			
-			$tmp[8]['text'] 			= 'e107 on Github';
-			$tmp[8]['description'] 		= '';
-			$tmp[8]['link'] 			= 'https://github.com/e107inc';
-			$tmp[8]['image'] 			= defset('E_16_GITHUB'); // "<img src='".E_16_NAV_LGOT."' alt='".ADLAN_151."' class='icon S16' />";
-			$tmp[8]['image_large'] 		= '';
-			$tmp[8]['image_src'] 		= '';
-			$tmp[8]['image_large_src'] 	= '';
-			$tmp[8]['link_class']		= '';					
+			// $tmp[8]['text'] 			= 'e107 on Github';
+			// $tmp[8]['description'] 		= '';
+			// $tmp[8]['link'] 			= 'https://github.com/e107inc';
+			// $tmp[8]['image'] 			= defset('E_16_GITHUB'); // "<img src='".E_16_NAV_LGOT."' alt='".ADLAN_151."' class='icon S16' />";
+			// $tmp[8]['image_large'] 		= '';
+			// $tmp[8]['image_src'] 		= '';
+			// $tmp[8]['image_large_src'] 	= '';
+			// $tmp[8]['link_class']		= '';					
 				
 			$menu_vars[$type]['text'] = ''; // ADMINNAME; // ""; // ADMINNAME;
 			$menu_vars[$type]['link'] = '#';

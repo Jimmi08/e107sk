@@ -16,7 +16,7 @@ if (!defined('e107_INIT'))
 }
 
 
-define('ADMINFEEDMORE', 'https://e107.org/blog');
+//define('ADMINFEEDMORE', 'https://e107.org/blog');
 
 
 
@@ -258,10 +258,10 @@ class adminstyle_infopanel
 
 				}
 
-				if($count == 20)
-				{
-					break;
-				}
+				// if($count == 20)
+				// {
+				// 	break;
+				// }
 			}
 	
 			// $mainPanel .= "<div class='clear'>&nbsp;</div>";
@@ -280,12 +280,12 @@ class adminstyle_infopanel
 	
 	//  ------------------------------- e107 News --------------------------------
 
-		$newsTabs = array();
-		$newsTabs['coreFeed'] = array('caption'=>LAN_GENERAL,'text'=>"<div id='e-adminfeed' style='min-height:300px'></div><div class='right'><a rel='external' href='".ADMINFEEDMORE."'>".LAN_MORE."</a></div>");
-		$newsTabs['pluginFeed'] = array('caption'=>LAN_PLUGIN,'text'=>"<div id='e-adminfeed-plugin'></div>");
-		$newsTabs['themeFeed'] = array('caption'=>LAN_THEMES,'text'=>"<div id='e-adminfeed-theme'></div>");
+		// $newsTabs = array();
+		// $newsTabs['coreFeed'] = array('caption'=>LAN_GENERAL,'text'=>"<div id='e-adminfeed' style='min-height:300px'></div><div class='right'><a rel='external' href='".ADMINFEEDMORE."'>".LAN_MORE."</a></div>");
+		// $newsTabs['pluginFeed'] = array('caption'=>LAN_PLUGIN,'text'=>"<div id='e-adminfeed-plugin'></div>");
+		// $newsTabs['themeFeed'] = array('caption'=>LAN_THEMES,'text'=>"<div id='e-adminfeed-theme'></div>");
 
-		$text2 = $ns->tablerender(LAN_LATEST_e107_NEWS,e107::getForm()->tabs($newsTabs, array('active'=>'coreFeed')),"core-infopanel_news",true);
+		// $text2 = $ns->tablerender(LAN_LATEST_e107_NEWS,e107::getForm()->tabs($newsTabs, array('active'=>'coreFeed')),"core-infopanel_news",true);
 	
 	
 	
@@ -390,13 +390,7 @@ class adminstyle_infopanel
 			 
 			 ';
 		}
-		else
-		{
-			echo $frm->open('infopanel','post', e_SELF);
-			echo $this->render_infopanel_options(true);	
-			echo $frm->close();
-		}
-
+	 
 	}
 /*
 	private function renderChart()

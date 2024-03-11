@@ -383,8 +383,12 @@ unset($tmp);
 e107::getJs()->renderJs('header', 4);
 e107::getJs()->renderJs('header_inline', 4);
 
+
 // ---------- Favicon ---------
-echo e107::getJs()->renderFavicon();
+//
+if(function_exists('renderFavicon')) {
+	echo e107::getJs()->renderFavicon();
+}
 
 //
 // G: Send Theme Headers
