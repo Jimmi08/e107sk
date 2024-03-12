@@ -1629,6 +1629,7 @@ if($this->pdo == true)
 		$this->template->SetTag("bartype", 'success');
 	
 		$htaccessError = $this->htaccess();
+		$this->robotstxt();
 		$this->saveFileTypes();
 
 		$e_forms->start_form("confirmation", "index.php");
@@ -1722,7 +1723,37 @@ if($this->pdo == true)
 		}		
 		return $error;	
 	}
-					
+
+	/**
+	 *	htaccess - handle the .htaccess file
+	 *
+	 *	@return string $error
+	 */
+	protected function robotstxt()
+	{
+		$error = "";
+
+		if (!file_exists("robots.txt"))
+		{
+			if (!rename("e107.robots.txt", "robots.txt"))
+			{
+				//$error = LANINS_142;
+			}
+			// elseif ($_SERVER['QUERY_STRING'] === "debug")
+			// {
+			// 	rename("robots.txt", "e107.robots.txt");
+			// 	//$error = "DEBUG: Rename from e107.robots.txt to .robots.txt was successful";
+			// }
+		}
+		// elseif (file_exists("e107.robots.txt"))
+		// {
+		// 	//$srch = array('[b]', '[/b]');
+		// 	//$repl = array('<b>', '</b>');
+		// 	//$error = str_replace($srch, $repl, LANINS_144); // too early to use e107::getParser() so use str_replace();
+		// }
+		// //return $error;
+	}
+
 	/**
 	 * Import and generate preferences and default content.
 	 *
