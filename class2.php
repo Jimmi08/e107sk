@@ -93,30 +93,6 @@ if(!empty($_E107['minimal']))
 
 //
 // C: Find out if register globals is enabled and destroy them if so
-// (DO NOT use the value of any variables before this point! They could have been set by the user)
-//
-
-// Can't be moved to e107, required here for e107_config vars security
-/*$register_globals = true;
-if(function_exists('ini_get'))
-{
-	$register_globals = ini_get('register_globals');
-}*/
-
-// Destroy! (if we need to)
-/*
-if($register_globals === true)
-{
-	if(isset($_REQUEST['_E107'])) { unset($_E107); }
-	foreach($GLOBALS as $global=>$var)
-	{
-		if (!preg_match('/^(_POST|_GET|_COOKIE|_SERVER|_FILES|_SESSION|GLOBALS|HTTP.*|_REQUEST|_E107|retrieve_prefs|eplug_admin|eTimingStart.*|oblev_.*)$/', $global))
-		{
-			unset($$global);
-		}
-	}
-	unset($global);
-}*/
 
 
 // Set Absolute file-path of directory containing class2.php
@@ -143,7 +119,7 @@ $error_handler = new error_handler();
 //
 // E: Setup other essential PHP parameters
 //
-define('e107_INIT', true);
+const e107_INIT = true;
 
 
 // DEPRECATED, use e107::getConfig() and e107::getPlugConfig()
@@ -159,7 +135,7 @@ else
 	unset($retrieve_prefs);
 }
 
-@include(e_ROOT.'e107_config.php');
+include(e_ROOT.'e107_config.php');
 
 if(!defined('e_POWEREDBY_DISABLE'))
 {
@@ -183,7 +159,7 @@ if(empty($PLUGINS_DIRECTORY))
 
 //define("MPREFIX", $mySQLprefix); moved to $e107->set_constants()
 
-if(empty($mySQLdefaultdb))
+if(empty($mySQLdefaultdb) && !class_exists('e107_config'))
 {
   // e107_config.php is either empty, not valid or doesn't exist so redirect to installer..
   header('Location: install.php');
@@ -201,8 +177,6 @@ unset($tmpPlugDir);
 // clever stuff that figures out where the paths are on the fly.. no more need for hard-coded e_HTTP :)
 //
 
-
-
 $tmp = e_ROOT.$HANDLERS_DIRECTORY;
 
 //Core functions - now API independent
@@ -210,24 +184,41 @@ $tmp = e_ROOT.$HANDLERS_DIRECTORY;
 e107_require_once($tmp.'/e107_class.php');
 unset($tmp);
 
-/** @note compact() causes issues with PHP7.3 */
-$dirPaths = array('ADMIN_DIRECTORY', 'FILES_DIRECTORY', 'IMAGES_DIRECTORY', 'THEMES_DIRECTORY', 'PLUGINS_DIRECTORY', 'HANDLERS_DIRECTORY', 'LANGUAGES_DIRECTORY', 'HELP_DIRECTORY', 'DOWNLOADS_DIRECTORY','UPLOADS_DIRECTORY','SYSTEM_DIRECTORY', 'MEDIA_DIRECTORY','CACHE_DIRECTORY','LOGS_DIRECTORY', 'CORE_DIRECTORY', 'WEB_DIRECTORY');
-$e107_paths = array();
-foreach($dirPaths as $v)
+if(!class_exists('e107_config')) // old e107_config.php format.
 {
-	if(isset($$v))
+	$dirNames = ['ADMIN_DIRECTORY', 'FILES_DIRECTORY', 'IMAGES_DIRECTORY', 'THEMES_DIRECTORY', 'PLUGINS_DIRECTORY', 'HANDLERS_DIRECTORY', 'LANGUAGES_DIRECTORY', 'HELP_DIRECTORY', 'DOWNLOADS_DIRECTORY','UPLOADS_DIRECTORY','SYSTEM_DIRECTORY', 'MEDIA_DIRECTORY','CACHE_DIRECTORY','LOGS_DIRECTORY', 'CORE_DIRECTORY', 'WEB_DIRECTORY'];
+
+	$e107_paths = [];
+	foreach ($dirNames as $name)
 	{
-		$e107_paths[$v] = $$v;
+	    if (isset($$name))
+	    {
+	        $e107_paths[$name] = $$name;
+	    }
 	}
+
+	$legacy_sql_info = compact('mySQLserver', 'mySQLuser', 'mySQLpassword', 'mySQLdefaultdb', 'mySQLprefix');
+	if(isset($mySQLport))
+	{
+		$legacy_sql_info['mySQLport'] = $mySQLport;
+	}
+
+	$sql_info = array_combine(array_map(function($k) {
+		return str_replace('mySQL', '', $k);
+		}, array_keys($legacy_sql_info)),
+        $legacy_sql_info
+	);
+}
+else // New e107_config.php format. v2.4+
+{
+	$e107_paths = e107_config::paths();
+	$sql_info = e107_config::database();
+	$E107_CONFIG = e107_config::other() ?? [];
 }
 
-// $e107_paths = compact('ADMIN_DIRECTORY', 'FILES_DIRECTORY', 'IMAGES_DIRECTORY', 'THEMES_DIRECTORY', 'PLUGINS_DIRECTORY', 'HANDLERS_DIRECTORY', 'LANGUAGES_DIRECTORY', 'HELP_DIRECTORY', 'DOWNLOADS_DIRECTORY','UPLOADS_DIRECTORY','SYSTEM_DIRECTORY', 'MEDIA_DIRECTORY','CACHE_DIRECTORY','LOGS_DIRECTORY', 'CORE_DIRECTORY', 'WEB_DIRECTORY');
-$sql_info = compact('mySQLserver', 'mySQLuser', 'mySQLpassword', 'mySQLdefaultdb', 'mySQLprefix');
-if(isset($mySQLport))
-{
-	$sql_info['mySQLport'] = $mySQLport;
-}
+
 $e107 = e107::getInstance()->initCore($e107_paths, e_ROOT, $sql_info, varset($E107_CONFIG, array()));
+
 e107::getSingleton('eIPHandler');			// This auto-handles bans etc
 unset($dirPaths,$e107_paths);
 
@@ -282,15 +273,6 @@ if(E107_DEBUG_LEVEL)
 	$dbg->logTime('Init ErrHandler');
 }
 
-//
-// I: Sanity check on e107_config.php
-//     e107_config.php upgrade check
-// obsolete check, rewrite it
-// if (!$ADMIN_DIRECTORY && !$DOWNLOADS_DIRECTORY)
-// {
-	// message_handler('CRITICAL_ERROR', 8, ': generic, ', 'e107_config.php');
-// 	exit;
-// }
 
 //
 // J: MYSQL INITIALIZATION
@@ -304,7 +286,7 @@ $sql = e107::getDb(); //TODO - find & replace $sql, $e107->sql
 $sql->db_SetErrorReporting(false);
 
 $dbg->logTime('SQL Connect');
-$merror=$sql->db_Connect($sql_info['mySQLserver'], $sql_info['mySQLuser'], $sql_info['mySQLpassword'], $mySQLdefaultdb);
+$merror=$sql->db_Connect($sql_info['server'], $sql_info['user'], $sql_info['password'], $sql_info['defaultdb']);
 unset($sql_info);
 // create after the initial connection.
 //DEPRECATED, BC, call the method only when needed
@@ -418,9 +400,6 @@ $pref = e107::getPref(); // include pref class.
 $sysprefs = new prefs;
 //DEPRECATED, BC, call e107::getPref/findPref() instead
 
-//this could be part of e107->init() method now, prefs will be auto-initialized
-//when proper called (e107::getPref())
-// $e107->set_base_path(); moved to init().
 
 //DEPRECATED, BC, call e107::getConfig('menu')->get('pref_name') only when needed
 if(!isset($_E107['no_menus']))
@@ -514,8 +493,7 @@ if(!empty($pref['redirectsiteurl']) && !empty($pref['siteurl'])) {
 			// -- ports do not match (http <==> https)
 			// -- base domain does not match (case-insensitive)
 			// -- NOT admin area
-			// see issue 5097 
-			if (($urlport !== $PrefSitePort || stripos($PrefSiteBase, $urlbase) === false || stripos($PrefSiteBase, $urlbase) === 4 ) && strpos(e_REQUEST_SELF, ADMINDIR) === false)
+			if (($urlport !== $PrefSitePort || stripos($PrefSiteBase, $urlbase) === false) && strpos(e_REQUEST_SELF, ADMINDIR) === false)
 			{
 				$aeSELF = explode('/', e_REQUEST_SELF, 4);
 				$aeSELF[0] = $aPrefURL[0];	// Swap in correct type of query (http, https)
@@ -1232,7 +1210,7 @@ function check_class($var, $userclass = null, $uid = 0)
 		$userclass = defset('USERCLASS_LIST', '0');
 	}
 	$e107 = e107::getInstance();
-	if ($var === e_LANGUAGE)
+	if ($var === defset('e_LANGUAGE'))
 	{
 		return true;
 	}
@@ -1364,7 +1342,7 @@ function getperms($arg, $ap = null, $path = null)
 		return true;
 	}
 
-	if ($arg === 'P' && preg_match('#(.*?)/' .e107::getInstance()->getFolder('plugins'). '(.*?)/(.*?)#', $path, $matches))
+	if ($arg === 'P' && preg_match('#(.*?)/' .e107::getFolder('plugins'). '(.*?)/(.*?)#', $path, $matches))
 	{
 		$sql = e107::getDb('psql');
 
