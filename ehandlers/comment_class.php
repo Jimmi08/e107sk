@@ -694,8 +694,8 @@ class comment
 		}
 		else
 		{
-			$author_name = $data; //BC Fix. 	
-			$comment_share = 0; //BC Fix. SEE https://github.com/e107inc/e107/issues/5111
+			$author_name = $data; //BC Fix.
+			$comment_share = 0; //BC Fix.
 		}
 
 

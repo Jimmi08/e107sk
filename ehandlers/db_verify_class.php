@@ -27,7 +27,9 @@ class db_verify
 {
 	var $backUrl       = "";
 	public $sqlFileTables = array();
-	private $sqlDatabaseTables   = array();
+	const MOST_PREFERRED_STORAGE_ENGINE = "InnoDB";
+	const MOST_PREFERRED_CHARSET = "utf8mb4";
+	public $availableStorageEngines = array(self::MOST_PREFERRED_STORAGE_ENGINE);
 
 	var $sqlLanguageTables = array();
 	var $results = array();
@@ -35,13 +37,29 @@ class db_verify
 	var $fixList = array();
 	private $currentTable = null;
 	private $internalError = false;
+
+	/**
+	 * Aliases for preferred storage engines when provided the key
+	 * @var string[][]
+	 */
+	private $storageEnginePreferenceMap = [
+		"MyISAM" => [self::MOST_PREFERRED_STORAGE_ENGINE, "Aria", "Maria", "MyISAM"],
+		"Aria"   => ["Aria", "Maria", "MyISAM"],
+		"InnoDB" => ["InnoDB", "XtraDB"],
+		"XtraDB" => ["XtraDB", "InnoDB"],
+	];
 	
 	var $fieldTypes = array('time','timestamp','datetime','year','tinyblob','blob',
 							'mediumblob','longblob','tinytext','mediumtext','longtext','text','date', 'json');
 							
 	var $fieldTypeNum = array('bit','tinyint','smallint','mediumint','integer','int','bigint',
-		'real','double','float','decimal','numeric','varchar','char ','binary','varbinary','enum','set'); // space after 'char' required. 
-	
+		'real','double','float','decimal','numeric','varchar','char','binary','varbinary','enum','set');
+
+	const STATUS_TABLE_OK = 0x0;
+	const STATUS_TABLE_MISSING = 0x1 << 1;
+	const STATUS_TABLE_MISMATCH_STORAGE_ENGINE = 0x1 << 2;
+	const STATUS_TABLE_MISMATCH_DEFAULT_CHARSET = 0x1 << 3;
+
 	var $modes = array(
 			'missing_table'		=> 'create',
 			'mismatch' 			=> 'alter',
@@ -59,27 +77,12 @@ class db_verify
 	function __construct()
 	{
 				
-		$sql = e107::getDb();
-		$sql->gen('SET SQL_QUOTE_SHOW_CREATE = 1');
+
 
 		$this->backUrl = e_SELF;
 
-		if(!deftrue('e_DEBUG') && $tmp = e107::getCache()->retrieve(self::cachetag, 15, true, true))
-		{
-			$this->sqlFileTables = e107::unserialize($tmp);
+		$this->init();
 
-		}
-		else
-		{
-			$this->sqlFileTables = $this->load();
-			$data = e107::serialize($this->sqlFileTables,'json');
-			e107::getCache()->set(self::cachetag,$data, true, true, true);
-		}
-
-
-		$this->sqlLanguageTables = $this->getSqlLanguages();
-
-	//	$this->loadCreateTableData();
 
 		return $this;
 		
@@ -143,7 +146,7 @@ class db_verify
 		$expected['default'] = isset($expected['default']) ? $expected['default'] : '';
 		$actual['default']   = isset($actual['default'])   ? $actual['default']   : '';
 
-		if($expected['type'] === 'JSON') // Fix for JSON alias MySQL 5.7+
+		if($expected['type'] === 'JSON' && $actual['type'] !== 'JSON') // Fix for JSON alias MySQL 5.7+
 		{
 			$expected['type'] = 'LONGTEXT';
 		}
@@ -223,7 +226,7 @@ class db_verify
 			}			
 		}
 				
-		if($cnt = count($this->errors))
+		if($cnt = $this->errors())
 		{
 			$message = str_replace("[x]",$cnt,DBVLAN_26); // Found [x] issues.
 			$mes->add($message, E_MESSAGE_WARNING); 
@@ -320,8 +323,6 @@ class db_verify
 
 		foreach($this->sqlFileTables[$selection]['tables'] as $key=>$tbl)
 		{
-			//$this->errors[$tbl]['_status'] = 'ok'; // default table status
-					
 			$rawSqlData = $this->getSqlData($tbl,$language);
 			
 			
@@ -332,8 +333,9 @@ class db_verify
 				
 				
 				
-				$this->errors[$tbl]['_status'] = 'missing_table';
-				$this->results[$tbl]['_file'] = $selection;
+				$this->errors[$tbl]['_status'] = self::STATUS_TABLE_MISSING;
+				$this->errors[$tbl]['_file'] = $selection;
+				$this->results[$tbl] = [];
 				// echo "missing table: $tbl";
 				continue;
 			}
@@ -353,6 +355,13 @@ class db_verify
 			$fileData['index']	= $this->getIndex($this->sqlFileTables[$selection]['data'][$key]);
 			$sqlData['index']	= $this->getIndex($sqlDataArr['data'][0]);
 
+			$maybeEngine = isset($sqlDataArr['engine'][0]) ? $sqlDataArr['engine'][0] : 'INTERNAL_ERROR:ENGINE';
+			$fileData['engine'] = $this->getIntendedStorageEngine($this->sqlFileTables[$selection]['engine'][$key]);
+			$sqlData['engine'] = $this->getCanonicalStorageEngine($maybeEngine);
+
+			$maybeCharset = isset($sqlDataArr['charset'][0]) ? $sqlDataArr['charset'][0] : 'INTERNAL_ERROR:CHARSET';
+			$fileData['charset'] = $this->getIntendedCharset($this->sqlFileTables[$selection]['charset'][$key]);
+			$sqlData['charset'] = $sqlDataArr['charset'][0]; // check the actual charset. $this->getCanonicalCharset($maybeCharset);
 
 		/*		
 			$debugA = print_r($fileFieldData,TRUE);	// Extracted Field Arrays	
@@ -369,10 +378,15 @@ class db_verify
 			
 			if(isset($debugA) && (e_PAGE === 'db.php'))
 			{
-									
+				$engineA = !empty($this->sqlFileTables[$selection]['engine'][0]) ? $this->sqlFileTables[$selection]['engine'][0] : 'unknown';
+				$engineB = !empty($sqlDataArr['engine'][0]) ? $sqlDataArr['engine'][0] : 'unknown';
+
+				$charsetA = !empty($this->sqlFileTables[$selection]['charset'][0]) ? $this->sqlFileTables[$selection]['charset'][0] : 'not specified';
+				$charsetB = !empty($sqlDataArr['charset'][0]) ? $sqlDataArr['charset'][0] : 'unknown';
+
 				$debug = "<table class='table table-bordered table-condensed'>
-				<tr><td style='padding:5px;font-weight:bold'>FILE: ".$tbl." (key=".$key.")</td>
-				<td style='padding:5px;font-weight:bold'>SQL: ".$tbl."</td>
+				<tr><td style='padding:5px;font-weight:bold'>FILE: $tbl (key=$key) <span class='badge'>$engineA</span> $charsetA</td>
+				<td style='padding:5px;font-weight:bold'>SQL: $tbl <span class='badge'>$engineB</span> $charsetB</td>
 				</tr>
 				<tr><td style='width:50%'><pre>".$debugA."</pre></td>
 				  <td style='width:50%'><pre>".$debugB."</pre></td></tr></table>";
@@ -433,20 +447,22 @@ class db_verify
 				 $results = 'indices';
 			}
 
+			if (!isset($this->errors[$tbl])) $this->errors[$tbl] = [];
+			if (!isset($this->errors[$tbl]['_status'])) $this->errors[$tbl]['_status'] = self::STATUS_TABLE_OK;
+			$this->errors[$tbl]['_file'] = $selection;
+
 			foreach($fileData[$type] as $key => $value)
 			{
 				$this->{$results}[$tbl][$key]['_status'] = 'ok';
 
 				if(!isset($sqlData[$type][$key]) || !is_array($sqlData[$type][$key]))
 				{
-					$this->errors[$tbl]['_status'] = 'error'; // table status
 					$this->{$results}[$tbl][$key]['_status'] = "missing_$type"; // type status
 					$this->{$results}[$tbl][$key]['_valid'] = $value;
 					$this->{$results}[$tbl][$key]['_file'] = $selection;
 				}
 				elseif(count($diff = $this->diffStructurePermissive($value, $sqlData[$type][$key])))
 				{
-					$this->errors[$tbl]['_status'] = "mismatch_$type";
 					$this->{$results}[$tbl][$key]['_status'] = 'mismatch';
 					$this->{$results}[$tbl][$key]['_diff'] = $diff;
 					$this->{$results}[$tbl][$key]['_valid'] = $value;
@@ -455,6 +471,19 @@ class db_verify
 				}
 
 
+			}
+
+			if ($fileData['engine'] !== $sqlData['engine'])
+			{
+				$this->errors[$tbl]['_status'] |= self::STATUS_TABLE_MISMATCH_STORAGE_ENGINE;
+				$this->errors[$tbl]['_valid_' . self::STATUS_TABLE_MISMATCH_STORAGE_ENGINE] = $fileData['engine'];
+				$this->errors[$tbl]['_invalid_' . self::STATUS_TABLE_MISMATCH_STORAGE_ENGINE] = $sqlData['engine'];
+			}
+			if ($fileData['charset'] !== $sqlData['charset'])
+			{
+				$this->errors[$tbl]['_status'] |= self::STATUS_TABLE_MISMATCH_DEFAULT_CHARSET;
+				$this->errors[$tbl]['_valid_' . self::STATUS_TABLE_MISMATCH_DEFAULT_CHARSET] = $fileData['charset'];
+				$this->errors[$tbl]['_invalid_' . self::STATUS_TABLE_MISMATCH_DEFAULT_CHARSET] = $sqlData['charset'];
 			}
 
 		}
@@ -475,24 +504,29 @@ class db_verify
 	{
 		foreach($this->results as $tabs => $field)
 		{
-			$file = varset($this->results[$tabs]['_file']);
-			$errorStatus = !empty($this->errors[$tabs]['_status']) ? $this->errors[$tabs]['_status'] : null;
+			$file = varset($this->results[$tabs]['_file'],$tabs);
+			$errorStatus = is_int($this->errors[$tabs]['_status']) ?
+				$this->errors[$tabs]['_status'] : self::STATUS_TABLE_OK;
 
-			if($errorStatus === 'missing_table') // Missing Table
+			if($errorStatus & self::STATUS_TABLE_MISSING) // Missing Table
 			{				
 				$this->fixList[$file][$tabs]['all'][] = 'create';
-			}					
-			elseif($this->errors[$tabs] != 'ok') // All Other Issues.. 
+			}
+			elseif (
+				$errorStatus & self::STATUS_TABLE_MISMATCH_STORAGE_ENGINE ||
+				$errorStatus & self::STATUS_TABLE_MISMATCH_DEFAULT_CHARSET
+			)
 			{
-				foreach($field as $k=>$f)
+				$this->fixList[$file][$tabs]['all'][] = 'convert';
+			}
+			foreach($field as $k=>$f)
+			{
+				if($f['_status']=='ok') continue;
+				$status = $f['_status'];
+				if(!empty($this->modes[$status]))
 				{
-					if($f['_status']=='ok') continue;
-					$status = $f['_status'];
-					if(!empty($this->modes[$status]))
-					{
-						$this->fixList[$f['_file']][$tabs][$k][] = $this->modes[$status];
-					}
-				}	
+					$this->fixList[$f['_file']][$tabs][$k][] = $this->modes[$status];
+				}
 			}
 		}
 		
@@ -520,9 +554,39 @@ class db_verify
 	 */
 	public function errors()
 	{
-		return count($this->errors);	
+		$badTableCount = 0;
+		foreach ($this->errors as $tableName => $tableMetadata)
+		{
+			if (!empty($tableMetadata['_status']))
+			{
+				$badTableCount++;
+				continue;
+			}
+			foreach ($this->results[$tableName] as $fieldMetadata)
+			{
+				if (isset($fieldMetadata['_status']) && $fieldMetadata['_status'] != 'ok')
+				{
+					$badTableCount++;
+					continue 2;
+				}
+			}
+			foreach ($this->indices[$tableName] as $indexMetadata)
+			{
+				if (isset($indexMetadata['_status']) && $indexMetadata['_status'] != 'ok')
+				{
+					$badTableCount++;
+					continue 2;
+				}
+			}
+		}
+
+		return $badTableCount;
 	}
 
+	public function getErrors()
+	{
+		return $this->errors;
+	}
 
 	/**
 	 * @param $fileArray
@@ -559,40 +623,60 @@ class db_verify
 					</thead>
 					<tbody>
 		";
-		
+
 		$info = array(
-			'missing_table'	=> DBVLAN_13,
-			'mismatch'		=> DBVLAN_8,
-			'missing_field'	=> DBVLAN_11,
-			'ok'		    => ADMIN_TRUE_ICON,
-			'missing_index'	=> DBVLAN_25,
+			self::STATUS_TABLE_MISSING                  => DBVLAN_13,
+			self::STATUS_TABLE_MISMATCH_STORAGE_ENGINE  => DBVLAN_17,
+			self::STATUS_TABLE_MISMATCH_DEFAULT_CHARSET => DBVLAN_18,
+			'mismatch'                                  => DBVLAN_8,
+			'missing_field'                             => DBVLAN_11,
+			'ok'                                        => defset('ADMIN_TRUE_ICON','true'),
+			'missing_index'                             => DBVLAN_25,
 		);
 		
 		
 		foreach($this->results as $tabs => $field)
 		{
-					
-			if($this->errors[$tabs]['_status'] === 'missing_table') // Missing Table
+			$tableStatus = $this->errors[$tabs]['_status'];
+			if($tableStatus != self::STATUS_TABLE_OK) // Missing Table
 			{
+				$errors = [];
+				$parser = e107::getParser();
+				foreach ([
+					self::STATUS_TABLE_MISSING,
+					self::STATUS_TABLE_MISMATCH_STORAGE_ENGINE,
+					self::STATUS_TABLE_MISMATCH_DEFAULT_CHARSET
+				] as $statusFlag)
+				{
+					if ($tableStatus & $statusFlag)
+						$errors[] = $parser->lanVars(
+							$info[$statusFlag],
+							[
+								'x' => $this->errors[$tabs]['_valid_' . $statusFlag],
+								'y' => $this->errors[$tabs]['_invalid_' . $statusFlag],
+							]
+						);
+				}
+
+				$fixMode = $tableStatus & self::STATUS_TABLE_MISSING ? 'create' : 'convert';
+
 				$text .= "
 					<tr>
 						<td>".$this->renderTableName($tabs)."</td>
-						<td>&nbsp;</td>
-						<td class='center middle error'>".$info[$this->errors[$tabs]['_status']]."</td>
-						<td>&nbsp;</td>
-						<td class='center middle autocheck e-pointer'>".$this->fixForm($this->results[$tabs]['_file'],$tabs, 'all', '', 'create') . "</td>
+						<td><em>".DBVLAN_28."</em></td>
+						<td class='center middle error'>".DBVLAN_27."</td>
+						<td>".implode("<br />", $errors)."</td>
+						<td class='center middle autocheck e-pointer'>".$this->fixForm($this->errors[$tabs]['_file'],$tabs, 'all', '', $fixMode) . "</td>
 					</tr>
 					";		
-			}					
-			elseif($this->errors[$tabs] != 'ok') // All Other Issues.. 
+			}
+			foreach($field as $k=>$f)
 			{
-				foreach($field as $k=>$f)
-				{
-					if($f['_status']=='ok') continue;
-					
-					$fstat = $info[$f['_status']];
-				
-					$text .= "
+				if($f['_status']=='ok') continue;
+
+				$fstat = $info[$f['_status']];
+
+				$text .= "
 					<tr>
 						<td>".$this->renderTableName($tabs)."</td>
 						<td>".$k."&nbsp;</td>
@@ -600,10 +684,8 @@ class db_verify
 						<td>".$this->renderNotes($f)."&nbsp;</td>
 						<td class='center middle autocheck e-pointer'>".$this->fixForm($f['_file'],$tabs, $k, $f['_valid'], $this->modes[$f['_status']]) . "</td>
 					</tr>
-					";	
-				}	
+					";
 			}
-			
 		}
 
 
@@ -793,6 +875,11 @@ class db_verify
 	*/ 
 	function getId($tabl,$cur)
 	{
+		if(empty($tabl))
+		{
+			return null;
+		}
+
 		$key = array_flip($tabl);
 		
 		if(strpos($cur,"lan_") === 0) // language table adjustment.
@@ -814,9 +901,17 @@ class db_verify
 	 * @param string $field eg. submitnews_id
 	 * @param string $sqlFileData (after CREATE)  eg. dblog_id int(10) unsigned NOT NULL auto_increment, ..... KEY....
 	 * @param string $engine MyISAM|InnoDB
+	 * @param string $charset MySQL/MariaDB text character set
 	 * @return string SQL query
 	 */
-	function getFixQuery($mode, $table, $field, $sqlFileData, $engine = 'MyISAM' )
+	function getFixQuery(
+		$mode,
+		$table,
+		$field,
+		$sqlFileData,
+		$engine = self::MOST_PREFERRED_STORAGE_ENGINE,
+		$charset = self::MOST_PREFERRED_CHARSET
+	)
 	{
 
 		if(strpos($mode, 'index') === 0)
@@ -824,12 +919,13 @@ class db_verify
 			$fdata = $this->getIndex($sqlFileData);
 			$newval = $this->toMysql($fdata[$field],'index');
 		}
-		else
+		elseif($mode == 'alter' || $mode === 'insert' || $mode === 'index')
 		{
 			$fdata = $this->getFields($sqlFileData);
 			$newval = $this->toMysql($fdata[$field]);
 		}
 
+		$query = "";
 
 		switch($mode)
 		{
@@ -856,8 +952,22 @@ class db_verify
 			break;
 
 			case 'create':
-				$query = "CREATE TABLE `".MPREFIX.$table."` (".$sqlFileData.") ENGINE=".$engine.";";
+				$query = "CREATE TABLE `".MPREFIX.$table."` (".$sqlFileData.")".
+					" ENGINE=".$engine." DEFAULT CHARACTER SET=".$charset.";";
 			break;
+
+			case 'convert':
+				$showCreateTable = $this->getSqlData($table);
+				$currentSchema = $this->getSqlFileTables($showCreateTable);
+				if($engine != $currentSchema['engine'][0])
+				{
+					$query .= "ALTER TABLE `" . MPREFIX . $table . "` ENGINE=" . $engine . ";";
+				}
+				if($charset != $currentSchema['charset'][0])
+				{
+					$query .= "ALTER TABLE `" . MPREFIX . $table . "` CONVERT TO CHARACTER SET " . $charset . ";";
+				}
+				break;
 		}
 
 
@@ -880,10 +990,10 @@ class db_verify
 			$fixArray = $this->fixList;	// Fix All	
 		}
 				
-			
+
 		foreach($fixArray as $j=>$file)
 		{
-						
+
 			foreach($file as $table=>$val)
 			{
 				
@@ -895,7 +1005,14 @@ class db_verify
 					foreach($fixes as $mode)
 					{				
 
-						$query = $this->getFixQuery($mode,$table,$field,$this->sqlFileTables[$j]['data'][$id],$this->sqlFileTables[$j]['engine'][$id]);
+						$query = $this->getFixQuery(
+							$mode,
+							$table,
+							$field,
+							$this->sqlFileTables[$j]['data'][$id],
+							$this->getIntendedStorageEngine($this->sqlFileTables[$j]['engine'][$id]),
+							$this->getIntendedCharset($this->sqlFileTables[$j]['charset'][$id])
+						);
 						
 				
 						// $mes->addDebug("Query: ".$query);		
@@ -948,14 +1065,10 @@ class db_verify
 		$ret = array();
 
 		$sql_data = preg_replace("#\/\*.*?\*\/#mis", '', $sql_data);	// remove comments 
-	//	echo "<h4>SqlData</h4>";
-	//	print_a($sql_data);
-	//	$regex = "/CREATE TABLE `?([\w]*)`?\s*?\(([\s\w\+\-_\(\),'\. `]*)\)\s*(ENGINE|TYPE)\s*?=\s?([\w]*)[\w =]*;/i";
 
-	//	$regex = "/CREATE TABLE (?:IF NOT EXISTS )?`?([\w]*)`?\s*?\(([\s\w\+\-_\(\),:'\. `]*)\)\s*(ENGINE|TYPE)\s*?=\s?([\w]*)[\w =]*;/i";
-
-		// also support non-alphanumeric chars.
-	 	$regex = "/CREATE TABLE (?:IF NOT EXISTS )?`?([\w]*)`?\s*?\(([^;]*)\)\s*(ENGINE|TYPE)\s*?=\s?([\w]*)[\w =]*;/i";
+	 //	$regex = "/CREATE TABLE (?:IF NOT EXISTS )?`?([\w]*)`?\s*?\(([^;]*)\)\s*((?:[\w\s]+=[^\s]+)+\s*)*;/i";
+	// 	$regex = "/CREATE TABLE (?:IF NOT EXISTS )?`?(\w*)`?\s*?\(([^;]*)\)\s*((?:[\w\s]+=\S+)+\s*)*;/i";
+		$regex = "/CREATE TABLE (?:IF NOT EXISTS )?`?(\w*)`?\s*?\(([^;]*)\)\s*((?:[\w\s]+=[^;]+)+\s*)*;/i";
 
 		preg_match_all($regex,$sql_data,$match);
 
@@ -986,8 +1099,45 @@ class db_verify
 		}
 
 		$ret['data'] = $data;
-		$ret['engine'] = $match[4];
-		
+
+		$ret['engine'] = array();
+		$ret['charset'] = array();
+
+		foreach ($match[3] as $rawTableOptions)
+		{
+			if (empty($rawTableOptions)) continue;
+
+			$engine = null;
+			$charset = null;
+
+		//	$tableOptionsRegex = "/([\w\s]+=[\w]+)+?\s*/";
+			$tableOptionsRegex = "/([\w\s]+=\s?\w+)+?\s*/";
+			preg_match_all($tableOptionsRegex, $rawTableOptions, $tableOptionsSplit);
+			$tableOptionsSplit = current($tableOptionsSplit);
+			foreach ($tableOptionsSplit as $rawTableOption)
+			{
+				list($tableOptionName, $tableOptionValue) = explode("=", $rawTableOption, 2);
+				$tableOptionName = strtoupper(trim($tableOptionName));
+				$tableOptionValue = trim($tableOptionValue);
+				switch ($tableOptionName)
+				{
+					case "ENGINE":
+					case "TYPE":
+						$engine = $tableOptionValue;
+						break;
+					case "DEFAULT CHARSET":
+					case "DEFAULT CHARACTER SET":
+					case "CHARSET":
+					case "CHARACTER SET":
+						$charset = $tableOptionValue;
+						break;
+				}
+			}
+
+			$ret['engine'][] = str_replace('MYISAM', 'MyISAM', $engine);
+			$ret['charset'][] = $charset;
+		}
+
 		if(empty($ret['tables']))
 		{
 			e107::getMessage()->addDebug("Unable to parse ".$this->currentTable."_sql.php file data. Possibly missing a ';' at the end?");
@@ -1013,7 +1163,7 @@ class db_verify
 		foreach($tmp as $line)
 		{
 			$line = trim($line);
-			$newline[] = preg_replace("/^([^`A-Z\s][a-z_]*[0-9]?)/","`$1`", $line);
+			$newline[] = preg_replace('/^([^`\s][0-9a-zA-Z\$_]*)/',"`$1`", $line);
 		}
 
 		$data = implode("\n",$newline);
@@ -1228,7 +1378,7 @@ class db_verify
 					</colgroup>
 					<thead>
 						<tr>
-							<th class='first form-inline' colspan='3'><label for='check-all-verify-jstarget-verify-table'>".$frm->checkbox_toggle('check-all-verify', 'verify_table', false )." ".LAN_CHECKALL.' | '.LAN_UNCHECKALL."</label></th>
+							<th class='first form-inline' colspan='3'><label for='check-all-verify-jstarget-verify-table'>".$frm->checkbox_toggle('check-all-verify', 'verify_table' )." ".LAN_CHECKALL.' | '.LAN_UNCHECKALL."</label></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -1253,7 +1403,7 @@ class db_verify
 			}
 			else
 			{
-				$icon = E_16_E107;
+				$icon = defset('E_16_E107');
 				$name = LAN_CORE;
 			}
 			$text .= ($c === 0) ? "<tr>\n" : '';
@@ -1298,8 +1448,135 @@ class db_verify
 	
 		$ns->tablerender(DBVLAN_23.SEP.DBVLAN_16, $mes->render().$text);
 	}
-	
-	
+
+	/**
+	 * Get the available storage engines on this MySQL server
+	 *
+	 * This method is not memoized and should not be called repeatedly.
+	 *
+	 * @return string[] An unordered list of the storage engines supported by the current MySQL server
+	 */
+	private function getAvailableStorageEngines()
+	{
+		$db = e107::getDb();
+		$db->gen("SHOW ENGINES;");
+		$output = [];
+		while ($row = $db->fetch())
+		{
+			$output[] = $row['Engine'];
+		}
+		return $output;
+	}
+
+	/**
+	 * Get the most compatible MySQL storage engine on this server for the provided storage engine
+	 *
+	 * @param string|null $maybeStorageEngine The requested storage engine
+	 * @return string|false The MySQL storage engine that should actually be used. false if no match found.
+	 */
+	public function getIntendedStorageEngine($maybeStorageEngine = null)
+	{
+
+		if($maybeStorageEngine === null)
+		{
+			return $this->getIntendedStorageEngine(self::MOST_PREFERRED_STORAGE_ENGINE);
+		}
+
+		if(strtoupper($maybeStorageEngine) === 'MYISAM')
+		{
+			$maybeStorageEngine = 'MyISAM';
+		}
+		elseif(strtoupper($maybeStorageEngine) === 'INNODB')
+		{
+			$maybeStorageEngine = 'InnoDB';
+		}
+
+		if (!array_key_exists($maybeStorageEngine, $this->storageEnginePreferenceMap))
+		{
+			if (in_array($maybeStorageEngine, $this->availableStorageEngines))
+				return $maybeStorageEngine;
+			return false;
+		}
+
+		$fit = array_intersect($this->storageEnginePreferenceMap[$maybeStorageEngine], $this->availableStorageEngines);
+		return current($fit);
+	}
+
+	/**
+	 * Try to figure out what storage engine the provided one is referring to
+	 *
+	 * @param string $maybeStorageEngine The reported storage engine
+	 * @return string The probable storage engine the input is referring to
+	 * @throws UnexpectedValueException if the provided storage engine is not known as an available storage engine
+	 */
+	public function getCanonicalStorageEngine($maybeStorageEngine)
+	{
+		if (in_array($maybeStorageEngine, $this->availableStorageEngines))
+			return $maybeStorageEngine;
+
+		throw new UnexpectedValueException(
+			"Unknown storage engine: " . var_export($maybeStorageEngine, true)
+		);
+	}
+
+	/**
+	 * Get the most compatible MySQL character set based on the input
+	 *
+	 * @param string|null $maybeCharset The requested character set. null to retrieve the default
+	 * @return string The MySQL character set that should actually be used
+	 */
+	public function getIntendedCharset($maybeCharset = null)
+	{
+		if (empty($maybeCharset)) return self::MOST_PREFERRED_CHARSET;
+
+		return $this->getCanonicalCharset($maybeCharset);
+	}
+
+	/**
+	 * Try to figure out what character set the provided one is referring to
+	 *
+	 * @param string $maybeCharset The reported character set
+	 * @return string The probable character set
+	 */
+	public function getCanonicalCharset($maybeCharset)
+	{
+		if ($maybeCharset == "utf8") return "utf8mb4";
+
+		return $maybeCharset;
+	}
+
+	/**
+	 * Inititalize the class parameters.
+	 * @return void
+	 */
+	public function init($clearCache=false): void
+	{
+		$sql = e107::getDb();
+		$sql->gen('SET SQL_QUOTE_SHOW_CREATE = 1');
+
+		if(!deftrue('e_DEBUG') && ($clearCache === false) && $tmp = e107::getCache()->retrieve(self::cachetag, 15, true, true))
+		{
+			$cacheData                     = e107::unserialize($tmp);
+			$this->sqlFileTables           = isset($cacheData['sqlFileTables']) ? $cacheData['sqlFileTables'] : $this->load();
+			$this->availableStorageEngines = isset($cacheData['availableStorageEngines']) ?
+				$cacheData['availableStorageEngines'] : $this->getAvailableStorageEngines();
+		}
+		else
+		{
+			$this->sqlFileTables           = $this->load();
+			$this->availableStorageEngines = $this->getAvailableStorageEngines();
+			$cacheData                     = e107::serialize([
+				'sqlFileTables'           => $this->sqlFileTables,
+				'availableStorageEngines' => $this->availableStorageEngines,
+			], 'json');
+			e107::getCache()->set(self::cachetag, $cacheData, true, true, true);
+		}
+
+
+		$this->sqlLanguageTables = $this->getSqlLanguages();
+	}
+
+
 }
 
 

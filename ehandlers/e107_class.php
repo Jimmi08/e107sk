@@ -15,6 +15,7 @@
 if (!defined('e107_INIT')) { exit; }
 
 
+
 /**
  *
  * @package     e107
@@ -153,6 +154,8 @@ class e107
 
 	protected static $_breadcrumb = array();
 
+
+
 	/**
 	 * Core handlers array
 	 * For new/missing handler add
@@ -268,6 +271,16 @@ class e107
 		// Core plugin auto-loaders.
 		'pageHelper'                     => '{e_PLUGIN}page/includes/pageHelper.php'
 	);
+
+	/**
+	 * List of core classes using the 'e107' namespace.
+	 */
+	protected static $_named_handlers = [
+		'override' => true,
+
+	];
+
+
 
 	/**
 	 * Overload core handlers array
@@ -517,8 +530,17 @@ class e107
 	 * @param array $e107_config_override
 	 * @return e107
 	 */
-	public function initCore($e107_paths, $e107_root_path, $e107_config_mysql_info, $e107_config_override = array())
+	public function initCore($e107_paths, $e107_root_path, $e107_config_mysql_info=array(), $e107_config_override = array())
 	{
+		if(!empty($e107_paths['admin'])) //v2.4
+		{
+			foreach($e107_paths as $dir => $path)
+			{
+				$newKey = strtoupper($dir).'_DIRECTORY';
+				$e107_paths[$newKey] = $path;
+				unset($e107_paths[$dir]);
+			}
+		}
 
 		return $this->_init($e107_paths, $e107_root_path, $e107_config_mysql_info, $e107_config_override);
 	}
@@ -586,7 +608,7 @@ class e107
 		$this->prepare_request();
 
 		// mysql connection info
-		$this->e107_config_mysql_info = $e107_config_mysql_info;
+		$this->setMySQLConfig($e107_config_mysql_info);
 
 		// unique folder for e_MEDIA - support for multiple websites from single-install. Must be set before setDirs()
 	/*	if (!empty($e107_config_override['site_path']))
@@ -597,7 +619,7 @@ class e107
 
 		if(empty($e107_config_override['site_path']))
 		{
-			$this->site_path = $this->makeSiteHash($e107_config_mysql_info['mySQLdefaultdb'], $e107_config_mysql_info['mySQLprefix']);
+			$this->site_path = $this->makeSiteHash($e107_config_mysql_info['defaultdb'], $e107_config_mysql_info['prefix']);
 		}
 
 		// Set default folder (and override paths) if missing from e107_config.php
@@ -823,7 +845,7 @@ class e107
 	public function initInstallSql($e107_config_mysql_info)
 	{
 		// mysql connection info
-		$this->e107_config_mysql_info = $e107_config_mysql_info;
+		$this->setMySQLConfig($e107_config_mysql_info);
 
 		// various constants - MAGIC_QUOTES_GPC, MPREFIX, ...
 		$this->set_constants();
@@ -990,7 +1012,9 @@ class e107
 	 */
 	public static function getHandlerPath($class_name, $parse_path = true)
 	{
+
 		$ret = isset(self::$_known_handlers[$class_name]) ? self::$_known_handlers[$class_name] : null;
+
 		if($parse_path && $ret)
 		{
 			$ret = self::getParser()->replaceConstants($ret);
@@ -1032,6 +1056,11 @@ class e107
 	public static function isHandler($class_name)
 	{
 		return isset(self::$_known_handlers[$class_name]);
+	}
+
+	public static function isHandlerNamespaced($className)
+	{
+		return isset(self::$_named_handlers[$className]) ? '\\e107\\'.$className : false;
 	}
 
 	/**
@@ -1132,6 +1161,11 @@ class e107
 			}
 		}
 
+		if($named = self::isHandlerNamespaced($class_name))
+		{
+			$class_name = $named;
+		}
+
 		if($path && is_string($path) && !class_exists($class_name, false))
 		{
 			global $_E107;
@@ -1148,9 +1182,21 @@ class e107
 			// remove the need for external function.
 			//e107_require_once() is available without class2.php. - see core_functions.php
 		}
+
 		if(class_exists($class_name, false))
 		{
-			self::setRegistry($id, new $class_name($vars));
+
+			try
+			{
+				$cls = is_null($vars) ? new $class_name() : new $class_name($vars);
+			}
+			catch (Exception $e)
+			{
+			   trigger_error($e->getMessage());
+			   return false;
+			}
+
+			self::setRegistry($id, $cls);
 		}
 
 		return self::getRegistry($id);
@@ -1939,7 +1985,7 @@ class e107
 	/**
 	 * Retrieve override handler singleton object
 	 *
-	 * @return override
+	 * @return e107\override
 	 */
 	public static function getOverride()
 	{
@@ -2483,6 +2529,8 @@ class e107
 			return null;
 		}
 
+
+
 		$jshandler = self::getJs();
 		if(is_string($parm))
 		{
@@ -2500,11 +2548,11 @@ class e107
 				// data is e.g. 'core/tabs.js'
 				if($zone !== null)
 				{
-					$jshandler->requireCoreLib($data, $zone);
+					$jshandler->requireCoreLib($data, $zone, $parm);
 				}
 				else
 				{
-					$jshandler->requireCoreLib($data);
+					$jshandler->requireCoreLib($data, 2, $parm);
 				}
 
 			break;
@@ -2590,11 +2638,11 @@ class e107
 				}
 				if($zone !== null)
 				{
-					$jshandler->requirePluginLib($type, $data, $zone);
+					$jshandler->requirePluginLib($type, $data, $zone, $parm);
 				}
 				else
 				{
-					$jshandler->requirePluginLib($type, $data);
+					$jshandler->requirePluginLib($type, $data, 5, $parm);
 				}
 			break;
 		}
@@ -4176,9 +4224,9 @@ class e107
 	 */
 	public static function url($plugin = '', $key = null, $row = array(), $options = array())
 	{
- 
+
 		/* backward compat - core keys. ie. news/xxx/xxx user/xxx/xxx etc, */
-		$legacy = array('page', 'search', 'user', 'download', 'gallery');
+		$legacy = array('news', 'page', 'search', 'user', 'download', 'gallery');
 
 		if($plugin === 'search')
 		{
@@ -4300,7 +4348,8 @@ class e107
 
 			if ($options['mode'] === 'full')
 			{
-				$sefUrl = SITEURL . $rawUrl;
+				$siteURL = !empty($tmp[$plugin][$key]['domain']) ? 'https://'.rtrim($tmp[$plugin][$key]['domain'],'/').'/' : SITEURL;
+				$sefUrl = $siteURL . $rawUrl;
 			}
 			elseif ($options['mode'] === 'raw')
 			{
@@ -5937,11 +5986,17 @@ class e107
 			return;
 		}
 
+
+
 		$levels[0] = e_HANDLER;
 		$classPath = implode('/', $levels).'.php';
 		if (is_file($classPath) && is_readable($classPath))
 		{
 			include($classPath);
+		}
+		elseif($filename = self::getHandlerPath($className))
+		{
+			include($filename);
 		}
 	}
 
@@ -6132,6 +6187,25 @@ class e107
 
 	}
 
+	/**
+	 * @param array $sqlinfo
+	 * @return void
+	 */
+	private function setMySQLConfig($sqlinfo): void
+	{
+		if(!empty($sqlinfo['server']))
+		{
+			foreach($sqlinfo as $key=>$val)
+			{
+				$newKey = 'mySQL'.$key;
+				$sqlinfo[$newKey] = $val;
+				unset($sqlinfo[$key]);
+			}
+		}
+
+
+		$this->e107_config_mysql_info = $sqlinfo;
+	}
 
 
 }
