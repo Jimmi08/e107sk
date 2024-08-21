@@ -275,22 +275,28 @@ function getperms($arg, $ap = '')
 
 $override = array();
 
+if (!isset($_POST['stage']))
+{
+	$_POST['stage'] = 1;
+}
+ 
 if(isset($_POST['previous_steps']))
 {
 	$tmp = unserialize(base64_decode($_POST['previous_steps']));
 	$override = (isset($tmp['paths']) && isset($tmp['paths']['hash'])) ? array('site_path'=>$tmp['paths']['hash']) : array();
 	unset($tmp);
 	unset($tmpadminpass1);
-}
-
+} 
+ 
 //$e107_paths = compact('ADMIN_DIRECTORY', 'FILES_DIRECTORY', 'IMAGES_DIRECTORY', 'THEMES_DIRECTORY', 'PLUGINS_DIRECTORY', 'HANDLERS_DIRECTORY', 'LANGUAGES_DIRECTORY', 'HELP_DIRECTORY', 'CACHE_DIRECTORY', 'DOWNLOADS_DIRECTORY', 'UPLOADS_DIRECTORY', 'MEDIA_DIRECTORY', 'LOGS_DIRECTORY', 'SYSTEM_DIRECTORY', 'CORE_DIRECTORY');
 $e107_paths = array();
 $e107 = e107::getInstance();
-$e107->site_path = '[hash]';
+ 
+$e107->site_path = (isset($tmp['paths']) && isset($tmp['paths']['hash'])) ? $tmp['paths']['hash'] : "[hash]"; // placeholder 
 $e107_paths = $e107->defaultDirs($ret);
  
 $ebase = realpath(__DIR__);
-
+ 
 if($e107->initInstall($e107_paths, $ebase, $override)===false)
 {
 	die_fatal_error("Error creating the following empty file: <b>".$ebase.DIRECTORY_SEPARATOR."e107_config.php</b><br />Please create it manually and then run the installation again.");
@@ -317,9 +323,7 @@ if(isset($_GET['create_tables']))
 	create_tables_unattended();
 	exit;
 }
-
-
-
+ 
 $e_install = new e_install();
 $e_forms = new e_forms();
 
@@ -547,7 +551,8 @@ class e_install
 		installLog::clear();
 		installLog::add('Stage 1 started');
 
-
+		unset($_POST['previous_steps']);
+ 
 		$this->template->SetTag("installation_heading", LANINS_001);
 		$this->template->SetTag("stage_pre", LANINS_002);
 		$this->template->SetTag("stage_num", LANINS_003);
@@ -687,7 +692,8 @@ class e_install
 				@mkdir($this->e107->e107_dirs[$dir]);	
 			}					
 		}
-
+print_a($this->e107->e107_dirs);
+		print_a($hash);
 		return null;
 	}
 
@@ -854,13 +860,14 @@ class e_install
 				if($this->previous_steps['mysql']['createdb'] == 1)
 				{
 					$notification = "<br /><span class='glyphicon glyphicon-ok'></span> ".LANINS_044;
-				    $query = 'CREATE DATABASE `'.$this->previous_steps['mysql']['db'].'` CHARACTER SET `utf8` ';
+					$query = 'CREATE DATABASE `' . $this->previous_steps['mysql']['db'] . '` CHARACTER SET `utf8mb4` ';
+
 					
 				}
 				else
 				{
 					$notification = "<br /><span class='glyphicon glyphicon-ok'></span>  ".LANINS_137;
-				    $query = 'ALTER DATABASE `'.$this->previous_steps['mysql']['db'].'` CHARACTER SET `utf8` ';
+				    $query = 'ALTER DATABASE `'.$this->previous_steps['mysql']['db']. '` CHARACTER SET `utf8mb4` ';
 				}
 
 				if (!$this->dbqry($query))
@@ -875,7 +882,7 @@ class e_install
 				}
 				else
 				{
-                    $this->dbqry('SET NAMES `utf8`');
+                    $this->dbqry('SET NAMES `utf8mb4`');
 
 					$page_content .= $notification; // "
 				}
@@ -906,7 +913,8 @@ class e_install
 		$this->template->SetTag("stage_content", "<div class='alert alert-block alert-{$alertType}'>".$head."</div>".$e_forms->return_form());
 
 		installLog::add('Stage 3 completed');
-
+		print_a($this->e107->e107_dirs);
+		print_a($hash);
 		return null;
 	}
 
@@ -1094,6 +1102,7 @@ class e_install
 		$this->setDb();
 		$this->updatePaths(); // update dynamic paths and create media and system directories - requires mysql info.
 
+		 
 		
 		$this->stage = 5;
 		installLog::add('Stage 5 started');
@@ -1199,11 +1208,14 @@ class e_install
 			</div>
 			\n";
 		$e_forms->add_plain_html($output);
+echo '1206';
+ 
 		$this->finish_form();
 		$this->add_button("submit", LAN_CONTINUE);
 		$this->template->SetTag("stage_content", $e_forms->return_form());
 		installLog::add('Stage 5 completed');
-
+		echo '13';	 
+		print_a($hash);
 		return null;
 	}
 
@@ -1218,7 +1230,8 @@ class e_install
 		$tp = e107::getParser();
 		$this->stage = 6;
 		installLog::add('Stage 6 started');
-
+		echo "Stage 6 started"; print_a($this->e107->e107_dirs);
+		print_a($hash);
 		// -------------------- Save Step 5 Data -------------------------
 		if(!vartrue($this->previous_steps['admin']['user']) || varset($_POST['u_name']))
 		{
@@ -1448,11 +1461,12 @@ class e_install
 	{
 		global $e_forms;
 		$tp = e107::getParser();
-
-		$this->e107->e107_dirs['SYSTEM_DIRECTORY'] = str_replace("[hash]",$this->e107->site_path,$this->e107->e107_dirs['SYSTEM_DIRECTORY']);	
-		$this->e107->e107_dirs['CACHE_DIRECTORY']  = str_replace("[hash]",$this->e107->site_path,$this->e107->e107_dirs['CACHE_DIRECTORY']);
+ 
+		$this->e107->e107_dirs['SYSTEM_DIRECTORY'] = str_replace("/[hash]",$this->e107->site_path,$this->e107->e107_dirs['SYSTEM_DIRECTORY']);	
+		$this->e107->e107_dirs['CACHE_DIRECTORY']  = str_replace("/[hash]",$this->e107->site_path,$this->e107->e107_dirs['CACHE_DIRECTORY']);
+		$this->e107->e107_dirs['MEDIA_DIRECTORY']  = str_replace("/[hash]", $this->e107->site_path, $this->e107->e107_dirs['CACHE_DIRECTORY']);
 		$this->e107->e107_dirs['SYSTEM_DIRECTORY'] = str_replace("/".$this->e107->site_path,"",$this->e107->e107_dirs['SYSTEM_DIRECTORY']);
-		$this->e107->e107_dirs['MEDIA_DIRECTORY']  = str_replace("/".$this->e107->site_path,"",$this->e107->e107_dirs['MEDIA_DIRECTORY']);
+		//$this->e107->e107_dirs['MEDIA_DIRECTORY']  = str_replace("/".$this->e107->site_path,"",$this->e107->e107_dirs['MEDIA_DIRECTORY']);
 
 		$this->stage = 7;
 		installLog::add('Stage 7 started');
@@ -1503,13 +1517,13 @@ class e_install
 /*
  * e107 website system
  *
- * Copyright (C) 2008-".date('Y')." e107 Inc (e107.org)
+ * Copyright (C) 2008-" . date('Y') . " e107 Inc (e107.org)
  * Released under the terms and conditions of the
  * GNU General Public License (http://www.gnu.org/licenses/gpl.txt)
  *
  * e107 configuration file
  *
- * This file has been generated by the installation script on ".date('r').".
+ * This file has been generated by the installation script on " . date('r') . ".
  */
 
 \$mySQLserver    = '{$this->previous_steps['mysql']['server']}';
@@ -1517,7 +1531,7 @@ class e_install
 \$mySQLpassword  = '{$this->previous_steps['mysql']['password']}';
 \$mySQLdefaultdb = '{$this->previous_steps['mysql']['db']}';
 \$mySQLprefix    = '{$this->previous_steps['mysql']['prefix']}';
-\$mySQLcharset   = 'utf8';
+\$mySQLcharset   = 'utf8mb4';
 
 \$ADMIN_DIRECTORY     = '{$this->e107->e107_dirs['ADMIN_DIRECTORY']}';
 \$FILES_DIRECTORY     = '{$this->e107->e107_dirs['FILES_DIRECTORY']}';
@@ -1548,12 +1562,64 @@ class e_install
 // define('e_DEBUG_JQUERY', 2); //set jquery version without using library
 // define('e_DEBUG_JS_FOOTER', true); //render jquery in footer 
 ";
-/*
+		/*
 if($this->pdo == true)
 {
 	$config_file .= 'define("e_PDO", true);';
 	$config_file .= "\n\n";
 }*/
+
+// New format e107 v2.4+
+
+$config_file = "<?php
+/*
+ * e107 website system
+ *
+ * Copyright (C) 2008-" . date('Y') . " e107 Inc (e107.org)
+ * Released under the terms and conditions of the
+ * GNU General Public License (http://www.gnu.org/licenses/gpl.txt)
+ *
+ * e107 configuration file
+ *
+ * This file has been generated by the installation script on " . date('r') . ".
+ */
+ 
+// -- Optional --
+// const e_EMAIL_CRITICAL = '{$this->previous_steps['admin']['email']}';  // email the admin (and share no details with the user) if a critical error occurs. 
+// const e_LOG_CRITICAL = true; // log critical errors but do not display them to user. (similar to above, but no email is sent - instead error goes into a log file)
+// const e_DEBUG = true;  // Enable debug mode to allow displaying of errors
+// const e_HTTP_STATIC = 'https://static.mydomain.com/';  // Use a static subdomain for js/css/images etc. 
+// const e_MOD_REWRITE_STATIC = true; // Rewrite static image urls. 
+// const e_GIT = 'path-to-git';  // Path to GIT for developers
+// const X_FRAME_SAMEORIGIN = false; // Option to override X-Frame-Options 
+ 
+
+return [
+    'database' => [
+        'server'   => '{$this->previous_steps['mysql']['server']}',
+        'user'     => '{$this->previous_steps['mysql']['user']}',
+        'password' => '{$this->previous_steps['mysql']['password']}',
+        'defaultdb'=> '{$this->previous_steps['mysql']['db']}',
+        'prefix'   => '{$this->previous_steps['mysql']['prefix']}',
+        'charset'  => 'utf8mb4',
+    ],
+    'paths' => [
+        'admin'      => '{$this->e107->e107_dirs['ADMIN_DIRECTORY']}',
+        'files'      => '{$this->e107->e107_dirs['FILES_DIRECTORY']}',
+        'images'     => '{$this->e107->e107_dirs['IMAGES_DIRECTORY']}',
+        'themes'     => '{$this->e107->e107_dirs['THEMES_DIRECTORY']}',
+        'plugins'    => '{$this->e107->e107_dirs['PLUGINS_DIRECTORY']}',
+        'handlers'   => '{$this->e107->e107_dirs['HANDLERS_DIRECTORY']}',
+        'languages'  => '{$this->e107->e107_dirs['LANGUAGES_DIRECTORY']}',
+        'help'       => '{$this->e107->e107_dirs['HELP_DIRECTORY']}',
+        'media'      => '{$this->e107->e107_dirs['MEDIA_DIRECTORY']}',
+        'system'     => '{$this->e107->e107_dirs['SYSTEM_DIRECTORY']}',
+    ],
+    'site' => [
+        'site_path'  => '{$this->previous_steps['paths']['hash']}',
+    ]
+];
+";
 
 
 		$config_result = $this->write_config($config_file);		
@@ -2220,7 +2286,7 @@ if($this->pdo == true)
 		preg_match_all("/create(.*?)(?:myisam|innodb);/si", $sql_data, $result );
 
 		// Force UTF-8 again
-		$this->dbqry('SET NAMES `utf8`');
+		$this->dbqry('SET NAMES `utf8mb4`');
 
 		$srch = array("CREATE TABLE","(");
 		$repl = array("DROP TABLE IF EXISTS","");
