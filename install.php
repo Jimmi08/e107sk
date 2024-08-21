@@ -10,6 +10,22 @@
 *
 */
 
+$ret =  array(
+	'ADMIN_DIRECTORY' 		=> 'eadmin/',
+	'IMAGES_DIRECTORY' 		=> 'eimages/',
+	'THEMES_DIRECTORY' 		=> 'ethemes/',
+	'PLUGINS_DIRECTORY' 	=> 'eplugins/',
+	'FILES_DIRECTORY' 		=> 'efiles/', // DEPRECATED!!!
+	'HANDLERS_DIRECTORY' 	=> 'ehandlers/',
+	'LANGUAGES_DIRECTORY' 	=> 'elanguages/',
+	'DOCS_DIRECTORY' 		=> 'edocs/',
+	'MEDIA_DIRECTORY' 		=> 'emedia/',
+	'SYSTEM_DIRECTORY' 		=> 'esystem/',
+	'CORE_DIRECTORY' 		=> 'ecore/',
+	'WEB_DIRECTORY' 		=> 'eweb/',
+);
+
+
 // minimal software version
 define('MIN_PHP_VERSION',   '7.4');
 define('MIN_MYSQL_VERSION', '5.1.2');
@@ -20,7 +36,7 @@ define('MAKE_INSTALL_LOG', true);
 
 /* Default Options and Paths for Installer */
 $MySQLprefix	     = 'e107_';
-$HANDLERS_DIRECTORY  = "ehandlers/"; // needed for e107 class init
+$HANDLERS_DIRECTORY  = $ret['HANDLERS_DIRECTORY']; // needed for e107 class init
 
 header('Content-type: text/html; charset=utf-8');
 
@@ -29,7 +45,7 @@ define("DEFAULT_INSTALL_THEME", 'bootstrap5');
 define('HELPICON', "<span class='e-tip glyphicon glyphicon-question-sign' style='float:right;padding-top:3px'></span>"); // <i class="glyphicon glyphicon-question-sign"></i>
 
 $e107info = array();
-require_once("eadmin/ver.php");
+require_once($ret['ADMIN_DIRECTORY']."ver.php");
 
 define("e_VERSION", $e107info['e107_version']);
 
@@ -270,21 +286,7 @@ if(isset($_POST['previous_steps']))
 //$e107_paths = compact('ADMIN_DIRECTORY', 'FILES_DIRECTORY', 'IMAGES_DIRECTORY', 'THEMES_DIRECTORY', 'PLUGINS_DIRECTORY', 'HANDLERS_DIRECTORY', 'LANGUAGES_DIRECTORY', 'HELP_DIRECTORY', 'CACHE_DIRECTORY', 'DOWNLOADS_DIRECTORY', 'UPLOADS_DIRECTORY', 'MEDIA_DIRECTORY', 'LOGS_DIRECTORY', 'SYSTEM_DIRECTORY', 'CORE_DIRECTORY');
 $e107_paths = array();
 $e107 = e107::getInstance();
-$ret =  array(
-	'ADMIN_DIRECTORY' 		=> 'eadmin/',
-	'IMAGES_DIRECTORY' 		=> 'eimages/',
-	'THEMES_DIRECTORY' 		=> 'ethemes/',
-	'PLUGINS_DIRECTORY' 	=> 'eplugins/',
-	'FILES_DIRECTORY' 		=> 'efiles/', // DEPRECATED!!!
-	'HANDLERS_DIRECTORY' 	=> 'ehandlers/',
-	'LANGUAGES_DIRECTORY' 	=> 'elanguages/',
-	'DOCS_DIRECTORY' 		=> 'edocs/',
-	'MEDIA_DIRECTORY' 		=> 'emedia/',
-	'SYSTEM_DIRECTORY' 		=> 'esystem/',
-	'CORE_DIRECTORY' 		=> 'ecore/',
-	'WEB_DIRECTORY' 		=> 'eweb/',
-);
-
+$e107->site_path = '[hash]';
 $e107_paths = $e107->defaultDirs($ret);
  
 $ebase = realpath(__DIR__);
