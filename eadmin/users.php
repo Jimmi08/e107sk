@@ -51,13 +51,7 @@ class users_admin extends e_admin_dispatcher
 			'uipath' 		=> null,
 			//'perm'			=> '0',
 		),
-		'ranks'		=> array(
-			'controller' 	=> 'users_ranks_ui',
-			'path' 			=> null,
-			'ui' 			=> 'users_ranks_ui_form',
-			'uipath' 		=> null,
-			//'perm'			=> '0',
-		)
+ 
 	);	
 
 
@@ -65,9 +59,9 @@ class users_admin extends e_admin_dispatcher
 		'main/list'		=> array('caption'=> LAN_MANAGE, 'perm' => '0|4'),
 		'main/add' 		=> array('caption'=> LAN_USER_QUICKADD, 'perm' => '4|U0|U1', 'icon'=>'fas-user-plus'),
 		'main/prefs' 	=> array('caption'=> LAN_OPTIONS, 'perm' => '4|U2'),
-		'ranks/list'	=> array('caption'=> LAN_USER_RANKS, 'perm' => '4|U3', 'icon'=>'fas-user-tie'),
+ 
 		'main/maintenance'  => array('caption'=> LAN_MAINTENANCE, 'perm' => '4', 'icon'=>'fas-toolbox')
-	//	'ranks/list'	=> array('caption'=> LAN_USER_RANKS, 'perm' => '4|U3')
+	 
 	);
 	
 	/*
@@ -253,7 +247,7 @@ class users_admin_ui extends e_admin_ui
 	protected $editQry = "SELECT u.*,ue.* FROM #user AS u left join #user_extended AS ue ON u.user_id = ue.user_extended_id  WHERE user_id = {ID}";
 	
 	protected $pid 			= "user_id";
-	protected $perPage 		= 10;
+	protected $perPage 		= 50;
 	protected $batchDelete 	= true;
 	protected $batchExport	= true; 
 	protected $listOrder 	= 'user_id DESC'; 
@@ -285,9 +279,9 @@ class users_admin_ui extends e_admin_ui
 	
 	//TODO - finish 'user' type, set 'data' to all editable fields, set 'noedit' for all non-editable fields
 	protected $fields = array(
-		'checkboxes'		=> array('title'=> '',				'type' => null, 'width' =>'50px', 'forced'=> TRUE, 'thclass'=>'center', 'class'=>'center'),
+		'checkboxes'		=> array('title'=> '',				'type' => null, 'width' =>'5%', 'forced'=> TRUE, 'thclass'=>'center', 'class'=>'center'),
 	
-		'user_id' 			=> array('title' => LAN_ID,			'tab'=>0, 'type' =>'text',	'data'=>'int',	'width' => '3%','forced' => true,'thclass'=>'center', 'class'=>'center', 'readParms'=>'link=sef&target=blank'),
+		'user_id' 			=> array('title' => LAN_ID,			'tab'=>0, 'type' =>'text',	'data'=>'int',	'width' => '5%','forced' => true, 'readParms'=>'link=sef&target=blank'),
 //		'user_status' 		=> array('title' => LAN_STATUS,		'type' => 'method',	'alias'=>'user_status', 'width' => 'auto','forced' => true, 'nosort'=>TRUE),
 		'user_ban' 			=> array('title' => LAN_STATUS,		'tab'=>0, 'type' => 'method', 'width' => 'auto', 'filter'=>true, 'batch'=>true,'thclass'=>'center', 'class'=>'center'),
 	
@@ -297,7 +291,7 @@ class users_admin_ui extends e_admin_ui
  		'user_customtitle' 	=> array('title' => LAN_USER_04,	'tab'=>0, 'type' => 'text',	'inline'=>true, 'data'=>'safestr', 'width' => 'auto'), // No real vetting
  		'user_password' 	=> array('title' => LAN_PASSWORD,	'tab'=>0, 'type' => 'method',	'data'=>'safestr', 'width' => 'auto'), //TODO add md5 option to form handler?
 		'user_sess' 		=> array('title' => LAN_SESSION,	'tab'=>0, 'noedit'=>true, 'type' => 'text',	'width' => 'auto'), // Photo
- 		'user_image' 		=> array('title' => LAN_USER_07,	'tab'=>0, 'type' => 'method',	'data'=>'str', 'width' => 'auto','thclass'=>'center','class'=>'center'), // Avatar
+ 		'user_image' 		=> array('title' => LAN_USER_07,	'tab'=>0, 'type' => 'dropdown',	'data'=>'str', 'width' => 'auto'), // Avatar
  		'user_email' 		=> array('title' => LAN_EMAIL,		'tab'=>0, 'type' => 'text', 'inline'=>true, 'data'=>'safestr',	'width' => 'auto', 'writeParms'=>array('size'=>'xxlarge')),
 		'user_hideemail' 	=> array('title' => LAN_USER_10,	'tab'=>0, 'type' => 'boolean', 'data'=>'int',	'width' => 'auto', 'thclass'=>'center', 'class'=>'center', 'filter'=>true, 'batch'=>true, 'readParms'=>'trueonly=1'),
 		'user_xup' 			=> array('title' => 'Xup',			'tab'=>0, 'noedit'=>true, 'type' => 'text', 'data'=>'str',	'width' => 'auto'),
@@ -324,8 +318,7 @@ class users_admin_ui extends e_admin_ui
 		'photo_upload'				=> array('title' => USRLAN_53,  'type' => 'boolean', 'writeParms' => 'label=yesno', 'data' => 'int',),
 		'im_width'					=> array('title' => USRLAN_47,  'type' => 'number',  'writeParms' => array('maxlength' => 4), 'help' => USRLAN_48, 'data' => 'int', ),
 		'im_height'					=> array('title' => USRLAN_49,  'type' => 'number',  'writeParms' => array('maxlength' => 4), 'help' => USRLAN_50, 'data' => 'int', ),
-		'profile_rate'				=> array('title' => USRLAN_126, 'type' => 'boolean', 'writeParms' => 'label=yesno', 'data' => 'int',),
-		'profile_comments'			=> array('title' => USRLAN_127, 'type' => 'boolean', 'writeParms' => 'label=yesno', 'data' => 'int',),
+		 
 		'force_userupdate'			=> array('title' => USRLAN_133, 'type' => 'boolean', 'writeParms' => 'label=yesno', 'help' => USRLAN_134, 'data' => 'int',),
 		'del_unv'					=> array('title' => USRLAN_93,  'type' => 'number',  'writeParms' => array('maxlength' => 5, 'post' => USRLAN_95), 'help' => USRLAN_94, 'data' => 'int',),
 		'del_accu'					=> array('title' => USRLAN_257, 'type' => 'boolean', 'writeParms' => 'label=yesno', 'data' => 'int',),
@@ -343,24 +336,6 @@ class users_admin_ui extends e_admin_ui
 	function getExtended()
 	{
 		return $this->extendedData;
-	}
-	
-	function ListObserver()
-	{
-		parent::ListObserver(); 
-
-		$this->fields['user_image']['width'] = '80px';
-
-		if (isset($this->fields['user_image']))  // Move avatar to 2nd column
-		{
-	        $item = $this->fields['user_image'];
-	        unset($this->fields['user_image']);
-
-	        $firstPart = array_slice($this->fields, 0, 2, true);
-	        $secondPart = array_slice($this->fields, 2, null, true);
-
-	        $this->fields = $firstPart + ['user_image' => $item] + $secondPart;
-        } 
 	}
 
 	function init()
@@ -437,14 +412,11 @@ class users_admin_ui extends e_admin_ui
 		if(!getperms('4|U0')) // Quick Add User Access Only. 
 		{
 			unset($this->fields['checkboxes']);
-			unset($this->fields['options']);
-			foreach($this->fields as $fld=>$val)
-			{
-				 $this->fields[$fld]['inline'] = false;
-			}
-
+			unset($this->fields['options']);			
 		}	
-		
+				
+		$this->fields['user_image']['writeParms'] = $this->getAvatarList();
+
 		if(!empty($_GET['readonly']))
 		{
 			foreach($this->fields as $key=>$v)
@@ -470,7 +442,7 @@ class users_admin_ui extends e_admin_ui
 
 
 
-	public function getAvatarList()
+	protected function getAvatarList()
 	{
 		$avs = array(''=>LAN_NONE);
 		$upload = array();
@@ -570,51 +542,54 @@ class users_admin_ui extends e_admin_ui
 		}
 
 		e107::getMessage()->addDebug(print_a($update,true));
-
-		if(!empty($update))
+        
+        if(!empty($update))
+  		{
+  			e107::getUserExt()->addFieldTypes($update);
+            
+        }
+        
+		if(!e107::getDb()->count('user_extended', '(user_extended_id)', "user_extended_id=".intval($new_data['submit_value'])))
 		{
-			e107::getUserExt()->addFieldTypes($update);
-
-			if(!e107::getDb()->count('user_extended', '(user_extended_id)', "user_extended_id=".intval($new_data['submit_value'])))
+            $update['data']['user_extended_id'] = intval($new_data['submit_value']);
+             
+			if(e107::getDb()->insert('user_extended', $update))
 			{
-				$update['data']['user_extended_id'] = intval($new_data['submit_value']);
-				if(e107::getDb()->insert('user_extended', $update))
-				{
-					// e107::getMessage()->addSuccess(LAN_UPDATED.': '.ADLAN_78); // not needed see pull/1816
-					e107::getMessage()->addDebug(LAN_UPDATED.': '.ADLAN_78); // let's put it in debug instead
-				}
-				else
-				{
-					e107::getMessage()->addError(LAN_UPDATED_FAILED.': '.ADLAN_78);
-					$error = e107::getDb()->getLastErrorText();
-					e107::getMessage()->addDebug($error);
-					e107::getMessage()->addDebug(print_a($update,true));
-
-
-					e107::getDb()->getLastErrorText();
-				}
+				// e107::getMessage()->addSuccess(LAN_UPDATED.': '.ADLAN_78); // not needed see pull/1816
+				e107::getMessage()->addDebug(LAN_UPDATED.': '.ADLAN_78); // let's put it in debug instead
 			}
 			else
 			{
-				$update['WHERE'] = 'user_extended_id='. intval($new_data['submit_value']);
+				e107::getMessage()->addError(LAN_UPDATED_FAILED.': '.ADLAN_78);
+				$error = e107::getDb()->getLastErrorText();
+				e107::getMessage()->addDebug($error);
+				e107::getMessage()->addDebug(print_a($update,true));
 
-				if(e107::getDb()->update('user_extended',$update)===false)
-				{
-					e107::getMessage()->addError(LAN_UPDATED_FAILED.': '.ADLAN_78);
-					$error = e107::getDb()->getLastErrorText();
-					e107::getMessage()->addDebug($error);
-					e107::getMessage()->addDebug(print_a($update,true));
 
-				}
-				else
-				{
-					 e107::getMessage()->reset(E_MESSAGE_SUCCESS)->addSuccess(LAN_UPDATED); 
-					e107::getMessage()->addDebug(LAN_UPDATED.': '.ADLAN_78); // let's put it in debug instead
-				}
+				e107::getDb()->getLastErrorText();
 			}
 		}
-
-
+		else
+		{
+		    if(!empty($update))
+  		    {
+                $update['WHERE'] = 'user_extended_id='. intval($new_data['submit_value']);
+    
+    			if(e107::getDb()->update('user_extended',$update)===false)
+    			{
+    				e107::getMessage()->addError(LAN_UPDATED_FAILED.': '.ADLAN_78);
+    				$error = e107::getDb()->getLastErrorText();
+    				e107::getMessage()->addDebug($error);
+    				e107::getMessage()->addDebug(print_a($update,true));
+    
+    			}
+    			else
+    			{
+    				 e107::getMessage()->reset(E_MESSAGE_SUCCESS)->addSuccess(LAN_UPDATED); 
+    				e107::getMessage()->addDebug(LAN_UPDATED.': '.ADLAN_78); // let's put it in debug instead
+    			}
+            }
+		}
 	}
 
 
@@ -636,11 +611,15 @@ class users_admin_ui extends e_admin_ui
 		}
 
 		$row = e107::user($userid);
+		$key = e_user_model::randomKey();
+	 
+		//$sql->update("user", "user_ban='2'  WHERE user_id='".$userid."' ");
+		//$sql->update("user", "user_sess' = '" . $key . "' WHERE user_id='" . $userid . "' ");
 
 		$sysuser->set('user_ban', 2)
-		->set('user_sess', e_user_model::randomKey())
-		->save();
-		
+			->set('user_sess', e_user_model::randomKey())
+			->save();
+		 
 		$sql->delete("banlist"," banlist_ip='{$row['user_ip']}' ");
 
 		$vars = array('x'=>$sysuser->getId(), 'y'=> $sysuser->getName(), 'z'=> $sysuser->getValue('email'));
@@ -1649,7 +1628,7 @@ class users_admin_ui extends e_admin_ui
 		<tr>
 			<td>".USRLAN_128."</td>
 			<td ><div class='form-inline'>
-			".$frm->text('loginname', varset($user_data['user_loginname']), varset($pref['loginname_maxlength'], 30), array('size'=>'xlarge', 'required'=>1))."&nbsp;&nbsp;
+			".$frm->text('loginname', varset($user_data['user_loginname']), varset($pref['loginname_maxlength'], 30), array('size'=>'xlarge'))."&nbsp;&nbsp;
 			".$frm->checkbox_label(USRLAN_170, 'generateloginname', 1, varset($pref['predefinedLoginName'], false))."
 			</div></td>
 		</tr>
@@ -1703,24 +1682,22 @@ class users_admin_ui extends e_admin_ui
 		}
 
 		// Make Admin.
-		if(getperms('4|U0')) // Quick Add User access should not be allowed to create new users with escalated perms.
-		{
-			$text .= "
-			<tr>
-				<td>".USRLAN_35."</td>
-				<td>
-					<a href='#set_perms' class='btn btn-default btn-secondary e-expandit'>".USRLAN_243."</a>
-					<div class='e-hideme' id='set_perms'>
-			";
+		$text .= "
+		<tr>
+			<td>".USRLAN_35."</td>
+			<td>
+				<a href='#set_perms' class='btn btn-default btn-secondary e-expandit'>".USRLAN_243."</a>
+				<div class='e-hideme' id='set_perms'>
+		";
+			
+		$text .= $prm->renderPermTable('grouped');
 
-			$text .= $prm->renderPermTable('grouped');
+		$text .= "
+				</div>
+			</td>
+		</tr>
+		";
 
-			$text .= "
-					</div>
-				</td>
-			</tr>
-			";
-		}
 
 		$text .= "
 
@@ -1740,223 +1717,7 @@ class users_admin_ui extends e_admin_ui
 		//$ns->tablerender(USRLAN_59,$mes->render().$text);
 	}	
 
-	public function RanksUpdateTrigger()
-	{
-		$fg = array();
-		$ranks_calc = '';
-		$ranks_flist = '';
-		$config = e107::getConfig();
-		foreach ($_POST['op'] as $f => $o)
-		{
-			$cfg[$f]['op'] = $o;
-			$cfg[$f]['val'] = varset($_POST['val'][$f],'');
-			if ($_POST['val'][$f])
-			{
-				$ranks_calc .= ($ranks_calc ? ' + ' : '').'({'.$f.'} '." $o {$_POST['val'][$f]}".' )';
-				$ranks_flist .= ($ranks_flist ? ',' : '').$f;
-			}
-		}
-
-		//Delete existing rank config
-		e107::getDb()->delete('generic', "gen_type = 'user_rank_config'");
-		
-		$tmp = array();
-		$tmp['data']['gen_type'] = 'user_rank_config';
-		$tmp['data']['gen_chardata'] = serialize($cfg);
-		$tmp['_FIELD_TYPES']['gen_type'] = 'string';
-		$tmp['_FIELD_TYPES']['gen_chardata'] = 'escape';
-		
-		//Add the new rank config
-		e107::getDb()->insert('generic', $tmp);
-		
-		// save prefs
-		$config->set('ranks_calc', $ranks_calc);
-		$config->set('ranks_flist', $ranks_flist);
-		$config->save();
-		$config->resetMessages();
-
-		//Delete existing rank data
-		e107::getDb()->delete('generic',"gen_type = 'user_rank_data'");
-		
-		//Add main site admin info
-		$tmp = array();
-		$tmp['_FIELD_TYPES']['gen_datestamp'] = 'int';
-		$tmp['_FIELD_TYPES']['gen_ip'] = 'todb';
-		$tmp['_FIELD_TYPES']['gen_user_id'] = 'int';
-		$tmp['_FIELD_TYPES']['gen_chardata'] = 'todb';
-		$tmp['_FIELD_TYPES']['gen_intdata'] = 'int';
-		$tmp['data']['gen_datestamp'] = 1;
-		$tmp['data']['gen_type'] = 'user_rank_data';
-		$tmp['data']['gen_ip'] = $_POST['calc_name']['main_admin'];
-		$tmp['data']['gen_user_id'] = varset($_POST['calc_pfx']['main_admin'],0);
-		$tmp['data']['gen_chardata'] = $_POST['calc_img']['main_admin'];
-		e107::getDb()->insert('generic',$tmp);
-		
-		//Add site admin info
-		unset ($tmp['data']);
-		$tmp['data']['gen_type'] = 'user_rank_data';
-		$tmp['data']['gen_datestamp'] = 2;
-		$tmp['data']['gen_ip'] = $_POST['calc_name']['admin'];
-		$tmp['data']['gen_user_id'] = varset($_POST['calc_pfx']['admin'],0);
-		$tmp['data']['gen_chardata'] = $_POST['calc_img']['admin'];
-		e107::getDb()->insert('generic', $tmp);
-		
-		//Add all current site defined ranks
-		if (isset ($_POST['field_id']))
-		{
-			foreach ($_POST['field_id'] as $fid => $x)
-			{
-				unset ($tmp['data']);
-				$tmp['data']['gen_type'] = 'user_rank_data';
-				$tmp['data']['gen_ip'] = varset($_POST['calc_name'][$fid],'');
-				$tmp['data']['gen_user_id'] = varset($_POST['calc_pfx'][$fid],0);
-				$tmp['data']['gen_chardata'] = varset($_POST['calc_img'][$fid],'');
-				$tmp['data']['gen_intdata'] = varset($_POST['calc_lower'][$fid],'_NULL_');
-				e107::getDb()->insert('generic', $tmp);
-			}
-		}
-		
-		//Add new rank, if posted
-		if (varset($_POST['new_calc_lower']))
-		{
-			unset ($tmp['data']);
-			$tmp['data']['gen_type'] = 'user_rank_data';
-			$tmp['data']['gen_datestamp'] = 0;
-			$tmp['data']['gen_ip'] = varset($_POST['new_calc_name']);
-			$tmp['data']['gen_user_id'] = varset($_POST['new_calc_pfx'],0);
-			$tmp['data']['gen_chardata'] = varset($_POST['new_calc_img']);
-			$tmp['data']['gen_intdata'] = varset($_POST['new_calc_lower']);
-			e107::getDb()->insert('generic', $tmp);
-		}
-		
-		e107::getMessage()->addSuccess(LAN_UPDATED); //XXX maybe not needed see pull/1816
-		e107::getCache()->clear_sys('nomd5_user_ranks');
-	}
-
-	function RanksDeleteTrigger($posted)
-	{
-		$rankId = (int) key($posted);
-		
-		e107::getCache()->clear_sys('nomd5_user_ranks');
-		if (e107::getDb()->delete('generic',"gen_id='{$rankId}'"))
-		{
-			e107::getMessage()->addSuccess(LAN_DELETED);
-		}
-		else
-		{
-			e107::getMessage()->addError(LAN_DELETED_FAILED);
-		}
-	}
-
-	function RanksPage()
-	{
-		$frm = e107::getForm();
-		$e107 = e107::getInstance();
-		$pref = e107::getPref();
-		$mes = e107::getMessage();
-		/** @var users_admin_form_ui $ui */
-		$ui = $this->getUI();
-		$tp = e107::getParser();
-
-		$ranks = e107::getRank()->getRankData();
-		$tmp = e107::getFile()->get_files(e_IMAGE.'ranks', '.*?\.(png|gif|jpg)');
-		
-	//	$this->addTitle(LAN_USER_RANKS);
-		
-		foreach($tmp as $k => $v)
-		{
-			$imageList[] = $v['fname'];
-		}
-		unset($tmp);
-		natsort($imageList);
-	
-		$text = $frm->open('core-user-ranks-form');
-
-		
-		$fields = array(
-			'type' => array('title' => USRLAN_207, 'type' => 'text', 'width' => 'auto', 'thclass' => 'left', 'class' => 'left'),
-			'rankName' => array('title' => USRLAN_208, 'type' => 'text', 'width' => 'auto', 'thclass' => 'left', 'class' => 'left'),
-			'lowThresh' => array('title' => USRLAN_209, 'type' => 'text', 'width' => 'auto', 'thclass' => 'left', 'class' => 'left'),
-			'langPrefix' => array('title' => USRLAN_210, 'type' => 'text', 'width' => 'auto', 'thclass' => 'left', 'class' => 'left'),
-			'rankImage' => array('title' => USRLAN_211, 'type' => 'text', 'width' => 'auto', 'thclass' => 'left', 'class' => 'left'),
-		);
-	
-	
-		$text .= "
-		<table class='table adminlist'>".
-		$frm->colGroup($fields, array_keys($fields)).
-		$frm->thead($fields, array_keys($fields));
-	
-		$info = $ranks['special'][1];
-		$val = $tp->toForm($info['name']);
-		$text .= "
-		<tr>
-			<td>".LAN_MAINADMIN."</td>
-			<td>
-				".$frm->text('calc_name[main_admin]', $val)."
-			</td>
-			<td>N/A</td>
-			<td>".$frm->checkbox('calc_pfx[main_admin]', 1, $info['lan_pfx'] ? true : false)."</td>
-			<td>".$ui->RankImageDropdown($imageList,'calc_img[main_admin]',$info['image'])."</td>
-		</tr>
-		";
-		$info = $ranks['special'][2];
-		$val = $tp->toForm($info['name']);
-		$text .= "
-		<tr>
-			<td>".LAN_ADMIN."</td>
-			<td>
-				".$frm->text('calc_name[admin]', $val)."
-			</td>
-			<td>N/A</td>
-			<td>".$frm->checkbox('calc_pfx[admin]', 1, $info['lan_pfx'] ? true : false)."</td>
-			<td>".$ui->RankImageDropdown($imageList, 'calc_img[admin]', $info['image'])."</td>
-		</tr>
-		<tr>
-			<td colspan='5'>&nbsp;</td>
-		</tr>
-		";
-		
-		foreach ($ranks['data'] as $k => $r)
-		{
-			$pfx_checked = ($r['lan_pfx'] ? "checked='checked'" : '');
-			$text .= "
-			<tr>
-				<td>".USRLAN_212."</td>
-				<td>
-					<input type='hidden' name='field_id[{$k}]' value='1' />
-					<input class='tbox' type='text' name='calc_name[$k]' value='{$r['name']}' />
-				</td>
-				<td>".$frm->number("calc_lower[{$k}]", $r['thresh'])."</td>
-				<td>".$frm->checkbox("calc_pfx[{$k}]", 1, $r['lan_pfx'] ? true : false)."</td>
-				<td>".$ui->RankImageDropdown($imageList, "calc_img[$k]", $r['image'])."&nbsp;".
-				$frm->submit_image("etrigger_delete[{$r['id']}]", LAN_DELETE, 'delete', LAN_CONFIRMDEL.": [{$r['name']}]?")."
-				</td>
-			</tr>
-			";
-		}
-		
-		$text .= "
-	
-		<tr>
-			<td colspan='5'>&nbsp;</td>
-		</tr>
-		<tr>
-			<td>".USRLAN_214."</td>
-			<td>".$frm->text('new_calc_name', '')."</td>
-			<td>".$frm->number('new_calc_lower', '')."</td>
-			<td>".$frm->checkbox('new_calc_pfx', 1, false)."</td>
-			<td>".$ui->RankImageDropdown($imageList, 'new_calc_img')."</td>
-		</tr>";
-		
-		$text .= '</table>
-		<div class="buttons-bar center">
-		'.$frm->admin_trigger('update', 'no-value', 'update', LAN_UPDATE).'
-		</div>
-		</form>';
-		
-		return $text;		
-	}
+ 
 	
 	// ================== OLD CODE backup =============>
 	
@@ -2427,23 +2188,7 @@ class users_admin_ui extends e_admin_ui
 
 class users_admin_form_ui extends e_admin_form_ui
 {
-	function user_image($curval,$mode, $att)
-	{
-		if($mode === 'read')
-		{
-			return empty($curval) ? '' : e107::getParser()->toAvatar(['user_image'=>$curval],['w'=>40, 'h'=>40,'crop'=>1, 'shape'=>'circle']);
 
-		}
-		elseif($mode === 'write')
-		{
-			$list = $this->getController()->getAvatarList();
-
-			return $this->select('user_image', $list, $curval);
-
-		}
-
-
-	}
 
 	function user_admin($curval,$mode, $att)
 	{
@@ -2872,176 +2617,7 @@ class users_admin_form_ui extends e_admin_form_ui
 	
 }
 
-
-	class users_ranks_ui extends e_admin_ui
-	{
-		protected $pluginTitle		= ADLAN_36;
-		protected $pluginName		= 'user_ranks';
-		protected $table			= 'generic';
-		protected $pid				= 'gen_id';
-		protected $perPage 			= 15;
-		protected $listQry			= "SELECT * FROM `#generic` WHERE gen_type='user_rank_data' ";
-		protected $listOrder     = " CASE gen_datestamp WHEN 1 THEN 1 WHEN 2 THEN 2 WHEN 3 THEN 3  WHEN 0 THEN 4 END, gen_intdata ";
-
-		protected $fields 		= array (
-		    'checkboxes'        =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
-		    'gen_id' 			=> array ( 'title' => LAN_ID,	 'nolist'=>true,	'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		    'gen_type' 			=> array ( 'title' => LAN_BAN, 	'type' => 'hidden', 'data' => 'str', 'width' => 'auto', 'batch' => true, 'filter' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => 'value=user_rank_data', 'class' => 'left', 'thclass' => 'left',  ),
-		    'gen_ip' 			=> array ( 'title' => USRLAN_208, 'type' => 'text', 'data' => 'str', 'inline'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		    'gen_intdata' 		=> array ( 'title' => USRLAN_209, 'type' => 'text', 'batch'=>false, 'data' => 'int', 'inline'=>true, 'width' => 'auto', 'help' => '', 'readParms' => 'default=-', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
-
-		    'gen_datestamp' 	=> array ( 'title' => 'Special', 'type' => 'hidden', 'nolist'=>true, 'data' => 'int', 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		    'gen_user_id' 		=> array ( 'title' => USRLAN_210, 'type' => 'boolean', 'batch'=>true, 'data' => 'int', 'inline'=>true, 'width' => '15%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
-		    //'gen_chardata' 		=> array ( 'title' => LAN_ICON, 'type' => 'dropdown', 'data' => 'str', 'inline'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',  ),
-		    'gen_chardata' 		=> array ( 'title' => LAN_ICON, 'type' => 'method', 'data' => 'str', 'inline'=>true, 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',  ),
-
-
-		    'options'			=> array ( 'title' => LAN_OPTIONS, 'type' =>'method', 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'right last', 'forced' => '1', 'readParms'=>'edit=0'  ),
-		);
-
-		protected $fieldpref = array('gen_datestamp', 'gen_type', 'gen_ip', 'gen_intdata', 'gen_user_id', 'gen_chardata');
-
-
-		// optional
-		public function init()
-		{
-			$tmp = e107::getFile()->get_files(e_IMAGE.'ranks', '.*?\.(png|gif|jpg)');
-
-			$mode = $this->getMode();
-			$action = $this->getAction();
-
-			$existing = e107::getDb()->gen("SELECT gen_id FROM #generic WHERE gen_type='user_rank_data' LIMIT 1 ");
-
-			if($mode == 'ranks' && ($action == 'list') && !$existing)
-			{
-				$this->createDefaultRecords();
-			}
-
-			//	$this->addTitle(LAN_USER_RANKS);
-
-			foreach($tmp as $k => $v)
-			{
-				$id = $v['fname'];
-				$this->fields['gen_chardata']['writeParms']['optArray'][$id] = $v['fname'];
-			}
-
-			unset($tmp);
-		//	natsort($imageList);
-		}
-
-		public function afterDelete($deleted_data, $id, $deleted_check)
-		{
-			e107::getCache()->clear_sys('nomd5_user_ranks');
-		}
-
-		public function afterUpdate($new_data, $old_data, $id)
-		{
-			e107::getCache()->clear_sys('nomd5_user_ranks');
-		}
-
-		private function createDefaultRecords()
-		{
-
-			$tmp = array();
-			$tmp['_FIELD_TYPES']['gen_datestamp'] = 'int';
-			$tmp['_FIELD_TYPES']['gen_ip'] = 'todb';
-			$tmp['_FIELD_TYPES']['gen_user_id'] = 'int';
-			$tmp['_FIELD_TYPES']['gen_chardata'] = 'todb';
-			$tmp['_FIELD_TYPES']['gen_intdata'] = 'int';
-
-
-			//Add main site admin info
-			$tmp['data']['gen_datestamp']   = 1;
-			$tmp['data']['gen_type']        = 'user_rank_data';
-			$tmp['data']['gen_ip']          = LAN_MAINADMIN;
-			$tmp['data']['gen_user_id']     = 1;
-			$tmp['data']['gen_chardata']    = 'English_main_admin.png';
-			$tmp['data']['gen_intdata']     = 0;
-			e107::getDb()->insert('generic',$tmp);
-			unset ($tmp['data']);
-
-
-			//Add site admin info
-			$tmp['data']['gen_type']        = 'user_rank_data';
-			$tmp['data']['gen_datestamp']   = 2;
-			$tmp['data']['gen_ip']          = LAN_ADMIN;
-			$tmp['data']['gen_user_id']     = 1;
-			$tmp['data']['gen_chardata']    = 'English_admin.png';
-			$tmp['data']['gen_intdata']     = 0;
-
-
-			e107::getDb()->insert('generic', $tmp);
-
-			for($i=1; $i < 11; $i++)
-			{
-				unset ($tmp['data']);
-				$tmp['data']['gen_type']        = 'user_rank_data';
-				$tmp['data']['gen_datestamp']   = 0;
-				$tmp['data']['gen_ip']          = "Level ".$i;
-				$tmp['data']['gen_user_id']     = 0;
-				$tmp['data']['gen_chardata']    = "lev".$i.".png";
-				$tmp['data']['gen_intdata']     = ($i * 150);
-
-				e107::getDb()->insert('generic', $tmp);
-			}
-
-
-
-		}
-
-	}
-
-
-
-	class users_ranks_ui_form extends e_admin_form_ui
-	{
-		// Override the default Options field.
-		function options($parms, $value, $id, $attributes)
-		{
-
-			if($attributes['mode'] == 'read')
-			{
-				parse_str(str_replace('&amp;', '&', e_QUERY), $query);
-				$query['action'] = 'edit';
-				$query['id'] = $id;
-				$query = http_build_query($query, null, '&amp;');
-
-				$text = "<a href='".e_SELF."?{$query}' class='btn btn-default' title='".LAN_EDIT."' data-toggle='tooltip' data-bs-toggle='tooltip' data-placement='left'>
-						".ADMIN_EDIT_ICON."</a>";
-
-				$special = $this->getController()->getListModel()->get('gen_datestamp');
-
-				if($special == 0)
-				{
-					$text .= $this->submit_image('menu_delete['.$id.']', $id, 'delete', LAN_DELETE.' [ ID: '.$id.' ]', array('class' => 'action delete btn btn-default'));
-				}
-
-				return $text;
-			}
-		}
-
-		function gen_chardata($curVal, $mode, $parms=null)
-		{
-			switch($mode)
-			{
-				case 'read':
-					return '<img src="'.e_IMAGE.'ranks/'.$curVal.'"/><br/>'.$curVal;
-					break;
-
-				case 'write':
-					$opts = $this->getController()->getFields()['gen_chardata']['writeParms']['optArray'];
-					return e107::getForm()->select('gen_chardata', $opts, $curVal);
-
-				case 'filter':
-				case 'batch':
-					return null;
-					break;
-
-			}
-		}
-
-
-	}
+ 
 
 
 

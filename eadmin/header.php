@@ -62,7 +62,12 @@ function loadJSAddons()
 	e107::js('footer', '{e_WEB}js/core/admin.jquery.js', 'jquery', 5); // Load all default functions.
 	e107::js('footer', '{e_WEB}js/core/all.jquery.js', 'jquery', 5); // Load all default functions.
 
+	$plUpload = 'plupload/i18n/' . e_LAN . '.js';
 
+	if(e_LAN != 'en' && file_exists(e_WEB_JS . $plUpload))
+	{
+		e107::js('footer', e_WEB_JS . $plUpload, 'jquery', 5);
+	}
 }
 
 
@@ -378,8 +383,12 @@ unset($tmp);
 e107::getJs()->renderJs('header', 4);
 e107::getJs()->renderJs('header_inline', 4);
 
+
 // ---------- Favicon ---------
-echo e107::getJs()->renderFavicon();
+//
+if(function_exists('renderFavicon')) {
+	echo e107::getJs()->renderFavicon();
+}
 
 //
 // G: Send Theme Headers

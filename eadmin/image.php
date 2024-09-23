@@ -40,12 +40,6 @@ if(varset($_GET['action']) === 'youtube' )
 e107::js('core', 'plupload/plupload.full.min.js', 'jquery', 2);
 e107::css('core', 'plupload/jquery.plupload.queue/css/jquery.plupload.queue.css', 'jquery');
 e107::js('core', 'plupload/jquery.plupload.queue/jquery.plupload.queue.min.js', 'jquery', 2);
-	$plUpload = 'plupload/i18n/' . e_LAN . '.js';
-
-	if(e_LAN != 'en' && file_exists(e_WEB_JS . $plUpload))
-	{
-		e107::js('footer', e_WEB_JS . $plUpload, 'jquery', 5);
-	}
 e107::js('core', 'core/mediaManager.js', 'jquery',5);
 // issue #3051 Preview url is wrong when target page is a plugin
 // Using this variable to check for the plugins directory and replace with empty space in case of...
@@ -868,6 +862,7 @@ class media_admin_ui extends e_admin_ui
 		protected $pid = 'media_id';
 		protected $perPage = 10;
 		protected $batchDelete = true;
+        protected $batchExport = true;
 	//	protected $defaultOrder = 'desc';
 		protected $listOrder = 'm.media_id desc'; // show newest images first. 
 		public $deleteConfirmScreen = true;
@@ -2217,10 +2212,10 @@ class media_admin_ui extends e_admin_ui
 		$md = e107::getMedia();
 
 
-		if($this->fontawesome > 4) // Fontawesome 5 and 6
+		if($this->fontawesome === 5)
 		{
-
-			$fab = e107::getMedia()->getGlyphs('fa'.$this->fontawesome.'-fab');
+		//	e107::getParser()->setFontAwesome(5);
+			$fab = e107::getMedia()->getGlyphs('fab');
 
 			foreach($fab as $val)
 			{
@@ -2230,13 +2225,13 @@ class media_admin_ui extends e_admin_ui
 						'saveValue'		=> 'fab-'.$val.'.glyph',
 						'thumbUrl'		=> 'fab-'.$val,
 						'title'			=> 'FA5 fa-'.$val,
-						'slideCaption'	=> "Font-Awesome $this->fontawesome (brand)",
+						'slideCaption'	=> 'Font-Awesome 5 (brand)',
 						'slideCategory'	=> 'font-awesome'
 				);
 
 			}
 
-			$fas = e107::getMedia()->getGlyphs('fa'.$this->fontawesome.'-fas');
+			$fas = e107::getMedia()->getGlyphs('fas');
 
 			foreach($fas as $val)
 			{
@@ -2246,13 +2241,13 @@ class media_admin_ui extends e_admin_ui
 						'saveValue'		=> 'fas-'.$val.'.glyph',
 						'thumbUrl'		=> 'fas-'.$val,
 						'title'			=> 'FA5 fa-'.$val,
-						'slideCaption'	=> "Font-Awesome $this->fontawesome (solid)",
+						'slideCaption'	=> 'Font-Awesome 5 (solid)',
 						'slideCategory'	=> 'font-awesome'
 				);
 
 			}
 
-			$far = e107::getMedia()->getGlyphs('fa'.$this->fontawesome.'-far');
+			$far = e107::getMedia()->getGlyphs('far');
 
 			foreach($far as $val)
 			{
@@ -2262,7 +2257,7 @@ class media_admin_ui extends e_admin_ui
 						'saveValue'		=> 'far-'.$val.'.glyph',
 						'thumbUrl'		=> 'far-'.$val,
 						'title'			=> 'FA5 far-'.$val,
-						'slideCaption'	=> "Font-Awesome $this->fontawesome (regular)",
+						'slideCaption'	=> 'Font-Awesome 5 (regular)',
 						'slideCategory'	=> 'font-awesome'
 				);
 
