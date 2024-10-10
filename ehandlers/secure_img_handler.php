@@ -185,7 +185,7 @@ class secure_image
 			$color = 'cccccc';		
 		}
 	
-		return "<img src='".e_IMAGE."secimg.php?id={$this->random_number}&amp;clr={$color}' class='icon secure-image' alt='Missing Code' style='max-width:100%' />";
+		return "<img src='".e_IMAGE_ABS."secimg.php?id={$this->random_number}&amp;clr={$color}' class='icon secure-image' alt='Missing Code' style='max-width:100%' />";
 	}
 
 
@@ -494,4 +494,3 @@ class secure_image
 
 
 }
-
