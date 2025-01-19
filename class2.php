@@ -1648,6 +1648,8 @@ function init_session()
 			define('LOGINMESSAGE', CORE_LAN10);
 			define('CORRUPT_COOKIE', true);
 		}
+
+		define('USERLV', time());
 	}
 	else
 	{
