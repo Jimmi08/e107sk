@@ -8022,7 +8022,7 @@ var_dump($select_options);*/
 
 		$writeParms = $att['writeParms'];
 
-		if(vartrue($att['type']) === 'bbarea' || !empty($writeParms['nolabel']))
+		if ((vartrue($att['type']) === 'bbarea' || vartrue($att['type']) === 'method') && !empty($writeParms['nolabel']))
 		{
 			$text = "
 			<tr>
@@ -8530,6 +8530,3 @@ echo $rs->form_option("Option 4");
 echo $rs->form_select_close();
 echo $rs->form_close();
 */
-
-
-
