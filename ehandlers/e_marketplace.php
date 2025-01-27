@@ -367,7 +367,8 @@ abstract class e_marketplace_adapter_abstract
 	 * e107.org download URL
 	 * @var string
 	 */
-	protected $downloadUrl = 'https://e107.org/request/';
+	//protected $downloadUrl = 'https://e107.org/request/';
+	protected $downloadUrl = '';
 	
 	/**
 	 * e107.org service URL [adapter implementation required]
@@ -592,7 +593,8 @@ class e_marketplace_adapter_wsdl extends e_marketplace_adapter_abstract
 	 * e107.org WSDL URL
 	 * @var string
 	 */
-	protected $serviceUrl = 'https://e107.org/service?wsdl';
+	//protected $serviceUrl = 'https://e107.org/service?wsdl';
+	protected $serviceUrl = '';
 	
 	/**
 	 * Request method POST || GET
@@ -663,70 +665,70 @@ class e_marketplace_adapter_wsdl extends e_marketplace_adapter_abstract
 	 */
 	public function _call($method, $args, $apply = true)
 	{
-		$result = array(
-			'data' => null,
-			//'error'=> array('code' => 0, 'message' => null)
-		);
-		$ret = null;
+		// $result = array(
+		// 	'data' => null,
+		// 	//'error'=> array('code' => 0, 'message' => null)
+		// );
+		// $ret = null;
 		
-		// authorize on every call, service class decides what to do on every method call
-		$auth = new stdClass;
-		$auth->authKey = $this->getAuthKey();
-		$header = new SoapHeader('https://e107.org/services/auth', 'checkAuthHeader', $auth);
+		// // authorize on every call, service class decides what to do on every method call
+		// $auth = new stdClass;
+		// $auth->authKey = $this->getAuthKey();
+		// $header = new SoapHeader('https://e107.org/services/auth', 'checkAuthHeader', $auth);
 
-		if(!is_object($this->client))
-		{
-			$result['exception'] = array();
-			$result['exception']['message'] = "Unable to connect at this time.";
-			return $result;
-		}
+		// if(!is_object($this->client))
+		// {
+		// 	$result['exception'] = array();
+		// 	$result['exception']['message'] = "Unable to connect at this time.";
+		// 	return $result;
+		// }
 		
-		try
-		{
+		// try
+		// {
 
 
-			$this->client->__setSoapHeaders(array($header));
-			if(is_array($args) && $apply)
-			{
-				$ret = call_user_func_array(array($this->client, $method), $args);
-			}
-			else $ret = $this->client->$method($args);
+		// 	$this->client->__setSoapHeaders(array($header));
+		// 	if(is_array($args) && $apply)
+		// 	{
+		// 		$ret = call_user_func_array(array($this->client, $method), $args);
+		// 	}
+		// 	else $ret = $this->client->$method($args);
 			
-			$result = $ret;
-			if(isset($ret['exception']))
-			{
-				$result['exception'] = array();
-				$result['exception']['message'] = "API Exception [call::{$method}]: (#".$ret['exception']['code'].") ".$ret['exception']['message'];
-				$result['exception']['code'] 	= 'API_'.$ret['exception']['code'];
-			}
-			unset($ret);
-		}
-		catch(SoapFault $e)
-		{
-			$result['exception']['message'] = "SoapFault Exception [call::{$method}]: (#".$e->faultcode.") ".$e->faultstring;
-			$result['exception']['code'] 	= 'SOAP_'.$e->faultcode;
-			if(E107_DEBUG_LEVEL)
-			{
-				$result['exception']['trace'] = $e->getTraceAsString(); 
-				$result['exception']['message'] .= ". Header fault: ".($e->headerfault ? $e->headerfault : 'n/a');
-			}
-		}
-		catch(Exception $e)
-		{
-			$result['exception']['message'] = "Generic Exception [call::{$method}]: (#".$e->getCode().") ".$e->getMessage();
-			$result['exception']['code'] 	= 'GEN_'.$e->getCode();
-			if(E107_DEBUG_LEVEL)
-			{
-				$result['debug']['trace'] = $e->getTraceAsString(); 
-			}
-		}
-		if(E107_DEBUG_LEVEL)
-		{
-			$result['debug']['response'] = $this->client->__getLastResponse(); 
-			$result['debug']['request'] = $this->client->__getLastRequest(); 
-			$result['debug']['request_header'] = $this->client->__getLastRequestHeaders(); 
-		}
-		return $result;
+		// 	$result = $ret;
+		// 	if(isset($ret['exception']))
+		// 	{
+		// 		$result['exception'] = array();
+		// 		$result['exception']['message'] = "API Exception [call::{$method}]: (#".$ret['exception']['code'].") ".$ret['exception']['message'];
+		// 		$result['exception']['code'] 	= 'API_'.$ret['exception']['code'];
+		// 	}
+		// 	unset($ret);
+		// }
+		// catch(SoapFault $e)
+		// {
+		// 	$result['exception']['message'] = "SoapFault Exception [call::{$method}]: (#".$e->faultcode.") ".$e->faultstring;
+		// 	$result['exception']['code'] 	= 'SOAP_'.$e->faultcode;
+		// 	if(E107_DEBUG_LEVEL)
+		// 	{
+		// 		$result['exception']['trace'] = $e->getTraceAsString(); 
+		// 		$result['exception']['message'] .= ". Header fault: ".($e->headerfault ? $e->headerfault : 'n/a');
+		// 	}
+		// }
+		// catch(Exception $e)
+		// {
+		// 	$result['exception']['message'] = "Generic Exception [call::{$method}]: (#".$e->getCode().") ".$e->getMessage();
+		// 	$result['exception']['code'] 	= 'GEN_'.$e->getCode();
+		// 	if(E107_DEBUG_LEVEL)
+		// 	{
+		// 		$result['debug']['trace'] = $e->getTraceAsString(); 
+		// 	}
+		// }
+		// if(E107_DEBUG_LEVEL)
+		// {
+		// 	$result['debug']['response'] = $this->client->__getLastResponse(); 
+		// 	$result['debug']['request'] = $this->client->__getLastRequest(); 
+		// 	$result['debug']['request_header'] = $this->client->__getLastRequestHeaders(); 
+		// }
+		// return $result;
 	}
 	
 	/**
@@ -776,8 +778,8 @@ class e_marketplace_adapter_xmlrpc extends e_marketplace_adapter_abstract
 	 * e107.org XML-rpc service
 	 * @var xmlClass
 	 */
-	protected $serviceUrl = 'https://e107.org/xservice';
-	
+	//protected $serviceUrl = 'https://e107.org/xservice';
+	protected $serviceUrl = '';
 	/**
 	 * Request method POST || GET
 	 * @var string
@@ -1043,26 +1045,26 @@ class eAuth
 	 * e107.org manage client credentials (Consumer Key and Secret) URL 
 	 * @var string
 	 */
-	protected $eauthConsumerUrl = 'https://e107.org/eauth/client';
-	
+	//protected $eauthConsumerUrl = 'https://e107.org/eauth/client';
+	protected $eauthConsumerUrl = '';
 	/**
 	 * URL used to make temporary credential request (Request Token and Secret) to e107.org before the authorization phase
 	 * @var string
 	 */
-	protected $eauthRequestUrl = 'https://e107.org/eauth/initialize';
-	
+	protected $eauthRequestUrl = '';
+	//protected $eauthRequestUrl = 'https://e107.org/eauth/initialize';
 	/**
 	 * URL used to redirect and authorize the resource owner (user) on e107.org using temporary (request) token
 	 * @var string
 	 */
-	protected $eauthAuthorizeUrl = 'https://e107.org/eauth/authorize';
-	
+	protected $eauthAuthorizeUrl = '';
+//	protected $eauthAuthorizeUrl = 'https://e107.org/eauth/authorize';
 	/**
 	 * URL used to obtain token credentials (Access Token and Secret) from e107.org using temporary (request) token
 	 * @var string
 	 */
-	protected $eauthAccessUrl = 'https://e107.org/eauth/token';
-	
+//	protected $eauthAccessUrl = 'https://e107.org/eauth/token';
+	protected $eauthAccessUrl = '';	
 	/**
 	 * Public client key (generated and obtained from e107.org)
 	 * @var string

@@ -22,7 +22,7 @@ if(!e107::isCli())
 	header('Content-type: text/html; charset=utf-8', TRUE);
 }
 
-define('ADMINFEED', 'https://e107.org/adminfeed');
+//define('ADMINFEED', 'https://e107.org/adminfeed');
 
 if(!empty($_GET['iframe']) && !defined('e_IFRAME')) // global iframe support.
 {
@@ -97,34 +97,34 @@ if(e_AJAX_REQUEST && getperms('0') &&  varset($_GET['mode']) == 'addons' && ($_G
 if(e_AJAX_REQUEST &&  ADMIN && varset($_GET['mode']) == 'core' && ($_GET['type'] == 'feed'))
 {
 
-	$limit = 3;
+	// $limit = 3;
 
-	if($data = e107::getXml()->getRemoteFile(ADMINFEED,3))
-	{
-	//	print_a($data);
-		$rows = e107::getXml()->parseXml($data, 'advanced');
-		$defaultImg = $rows['channel']['image']['url'];
+	// if($data = e107::getXml()->getRemoteFile(ADMINFEED,3))
+	// {
+	// //	print_a($data);
+	// 	$rows = e107::getXml()->parseXml($data, 'advanced');
+	// 	$defaultImg = $rows['channel']['image']['url'];
 
-		$text = '<div style="margin-left:10px;margin-top:10px">';
-		$count = 1;
-		$tp = e107::getParser();
-		foreach($rows['channel']['item'] as $row)
-		{
-			if($count > $limit){ break; }
+	// 	$text = '<div style="margin-left:10px;margin-top:10px">';
+	// 	$count = 1;
+	// 	$tp = e107::getParser();
+	// 	foreach($rows['channel']['item'] as $row)
+	// 	{
+	// 		if($count > $limit){ break; }
 
-			$description = $tp->toText($row['description']);
-			$text .= '
-			<div class="media">
-			  <div class="media-body">
-			    <h4 class="media-heading"><a target="_blank" href="'.$row['link'].'">'.$row['title'].'</a> <small>— '.$row['pubDate'].'</small></h4>
-			   '.$tp->text_truncate($description,150).'
-			  </div></div>';
-			  $count++;
-		}
-		$text .= '</div>';
-		echo $text;
+	// 		$description = $tp->toText($row['description']);
+	// 		$text .= '
+	// 		<div class="media">
+	// 		  <div class="media-body">
+	// 		    <h4 class="media-heading"><a target="_blank" href="'.$row['link'].'">'.$row['title'].'</a> <small>— '.$row['pubDate'].'</small></h4>
+	// 		   '.$tp->text_truncate($description,150).'
+	// 		  </div></div>';
+	// 		  $count++;
+	// 	}
+	// 	$text .= '</div>';
+	// 	echo $text;
 
-	}
+	// }
 	/*else
 	{
 		if(e_DEBUG)
@@ -365,4 +365,3 @@ if (!function_exists('show_admin_menu'))
 }
 
 // parse_admin() has been replaced by e107::renderLayout()
-

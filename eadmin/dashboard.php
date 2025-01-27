@@ -202,31 +202,31 @@ class adminstyle_dashboard extends adminstyle_infopanel
 
 		public function core_infopanel_news($options = array()) 
 		{
-			$ns = e107::getRender();
+			// $ns = e107::getRender();
 		 
-			$dashboardUniqueId 	= varset($options['uniqueId'], time());
-			$dashboardStyle		= varset($options['style'], 'flexbox');
+			// $dashboardUniqueId 	= varset($options['uniqueId'], time());
+			// $dashboardStyle		= varset($options['style'], 'flexbox');
 
-			$newsTabs = array();
-			$newsTabs['coreFeed'] = array('caption' => LAN_GENERAL, 'text' => "<div id='e-adminfeed' style='min-height:300px'></div><div class='right'><a rel='external' href='" . ADMINFEEDMORE . "'>" . LAN_MORE . "</a></div>");
-			$newsTabs['pluginFeed'] = array('caption' => LAN_PLUGIN, 'text' => "<div id='e-adminfeed-plugin'></div>");
-			$newsTabs['themeFeed'] = array('caption' => LAN_THEMES, 'text' => "<div id='e-adminfeed-theme'></div>");
+			// $newsTabs = array();
+			// $newsTabs['coreFeed'] = array('caption' => LAN_GENERAL, 'text' => "<div id='e-adminfeed' style='min-height:300px'></div><div class='right'><a rel='external' href='" . ADMINFEEDMORE . "'>" . LAN_MORE . "</a></div>");
+			// $newsTabs['pluginFeed'] = array('caption' => LAN_PLUGIN, 'text' => "<div id='e-adminfeed-plugin'></div>");
+			// $newsTabs['themeFeed'] = array('caption' => LAN_THEMES, 'text' => "<div id='e-adminfeed-theme'></div>");
 
-			$code = "
-			jQuery(function($){
-				$('#e-adminfeed').load('" . e_ADMIN . "admin.php?mode=core&type=feed');
-				$('#e-adminfeed-plugin').load('" . e_ADMIN . "admin.php?mode=addons&type=plugin');
-				$('#e-adminfeed-theme').load('" . e_ADMIN . "admin.php?mode=addons&type=theme');	
-			});
-			";
-			e107::js('inline', $code, 'jquery');
+			// $code = "
+			// jQuery(function($){
+			// 	$('#e-adminfeed').load('" . e_ADMIN . "admin.php?mode=core&type=feed');
+			// 	$('#e-adminfeed-plugin').load('" . e_ADMIN . "admin.php?mode=addons&type=plugin');
+			// 	$('#e-adminfeed-theme').load('" . e_ADMIN . "admin.php?mode=addons&type=theme');	
+			// });
+			// ";
+			// e107::js('inline', $code, 'jquery');
 
-			$ns->setStyle( $dashboardStyle);
-			$ns->setUniqueId($dashboardUniqueId);
+			// $ns->setStyle( $dashboardStyle);
+			// $ns->setUniqueId($dashboardUniqueId);
 		 
-			$coreInfoPanelNews = $ns->tablerender(LAN_LATEST_e107_NEWS, e107::getForm()->tabs($newsTabs, array('active' => 'coreFeed')), $dashboardUniqueId, true);
+			// $coreInfoPanelNews = $ns->tablerender(LAN_LATEST_e107_NEWS, e107::getForm()->tabs($newsTabs, array('active' => 'coreFeed')), $dashboardUniqueId, true);
 			
-			return $coreInfoPanelNews;
+			// return $coreInfoPanelNews;
 		}
 
 		/**
