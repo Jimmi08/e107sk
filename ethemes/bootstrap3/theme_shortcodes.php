@@ -122,10 +122,14 @@ class theme_shortcodes extends e_shortcode
 		}
 	}
 
-
-
+	//TODO: replace with {SIGNIN}
 	function sc_bootstrap_usernav($parm=null)
 	{
+		// Check if the login_menu plugin is installed
+		if (!e107::isInstalled('login_menu'))
+		{
+			return ''; // Returns an empty string if the plugin is not installed
+		}
 
 		$placement = e107::pref('theme', 'usernav_placement', 'top');
 
@@ -347,4 +351,3 @@ class theme_shortcodes extends e_shortcode
  
 }
  
-

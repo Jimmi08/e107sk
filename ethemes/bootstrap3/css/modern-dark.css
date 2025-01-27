@@ -842,8 +842,7 @@ tbody.collapse.in{display:table-row-group}
 .pull-right>.dropdown-menu{right:0;left:auto}
 .dropup .caret,.navbar-fixed-bottom .dropdown .caret{border-top:0;border-bottom:4px dashed;border-bottom:4px solid\9;content:""}
 .dropup .dropdown-menu,.navbar-fixed-bottom .dropdown .dropdown-menu{top:auto;bottom:100%;margin-bottom:2px}
-@media (min-width:768px){.navbar-right .dropdown-menu{left:auto;right:0}
-.navbar-right .dropdown-menu-left{left:0;right:auto}
+@media (min-width:768px){
 }
 .btn-group,.btn-group-vertical{position:relative;display:inline-block;vertical-align:middle}
 .btn-group-vertical>.btn,.btn-group>.btn{position:relative;float:left}
@@ -1163,7 +1162,7 @@ to{background-position:0 0}
 .progress-striped .progress-bar-danger{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)}
 .media{margin-top:15px}
 .media:first-child{margin-top:0}
-.media,.media-body{zoom:1;overflow:hidden}
+.media,.media-body{transform: scale(1);transform-origin: 0 0;overflow:hidden}
 .media-body{width:10000px}
 .media-object.img-thumbnail{max-width:none}
 .media-right,.media>.pull-right{padding-left:10px}
@@ -1475,7 +1474,7 @@ td.visible-print,th.visible-print{display:table-cell!important}
 .text-success,.text-success:hover{color:#51a351}
 .text-danger,.text-danger:hover{color:#F86965}
 .text-warning,.text-warning:hover{color:#f89406}
-.text-info,.text-info:hover{color:#5bc0de}
+.text-info,.text-info:hover{color:#8BC0ED !important}
 .table a{text-decoration:underline}
 .table .danger,.table .info,.table .success,.table .warning{color:#fff}
 .table-bordered tbody tr.danger td,.table-bordered tbody tr.danger:hover td,.table-bordered tbody tr.success td,.table-bordered tbody tr.success:hover td,.table-bordered tbody tr.warning td,.table-bordered tbody tr.warning:hover td{border-color:#0a0a0a}

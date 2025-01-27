@@ -1705,7 +1705,7 @@ return [
 		}
 
 		$this->finish_form();
-		$this->stats();
+	
 		$this->template->SetTag("stage_content", "<div class='alert alert-block alert-{$alertType}'>" . $page . "</div>" . $e_forms->return_form());
 		installLog::add('Stage 8 completed');
 
@@ -1724,18 +1724,6 @@ return [
 </e107Filetypes>';
 
 		return file_put_contents($this->e107->e107_dirs['SYSTEM_DIRECTORY'] . "filetypes.xml", $data);
-	}
-
-
-
-	protected function stats()
-	{
-		global $e_forms;
-
-		$data = array('name' => $this->previous_steps['prefs']['sitename'], 'theme' => $this->previous_steps['prefs']['sitetheme'], 'language' => $this->previous_steps['language'], 'url' => $_SERVER['HTTP_REFERER'], 'version' => defset('e_VERSION'));
-		$base = base64_encode(http_build_query($data, ''));
-		$url = "https://e107.org/e-install/" . $base;
-		$e_forms->add_plain_html("<img src='" . $url . "' style='width:1px; height:1px' />");
 	}
 
 
