@@ -4272,8 +4272,8 @@ thead tr {
 }
 
 .well, input, select, textarea {
-  color: #337ab7;
-  background-color: #022643;
+  color: #000;
+  background-color: #f9f9f9;
 }
 
 .menu-selector input:checked + span {
