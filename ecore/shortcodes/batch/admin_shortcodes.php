@@ -74,7 +74,7 @@ class admin_shortcodes extends e_shortcode
             'menus.php',
             'phpinfo.php',
             'credits.php',
-            'docs.php',
+           // 'docs.php',
             'cache.php',
             'emoticon.php',
             'updateadmin.php',
